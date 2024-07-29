@@ -16,14 +16,11 @@ class VMSingleGenre @Inject constructor(private val repository: ServiceRepositor
     private val _state = MutableStateFlow<List<SingleGenreData>>(emptyList())
     val state: StateFlow<List<SingleGenreData>> = _state
 
-    init {
-        getSingleGenreData()
-    }
 
-    private fun getSingleGenreData() {
+    fun getSingleGenreData(genreId: String) {
         viewModelScope.launch {
             try {
-                val singleGenreDataList = repository.getSingleGenreDataList()
+                val singleGenreDataList = repository.getSingleGenreDataList(genreId)
                 _state.value = singleGenreDataList
             } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")

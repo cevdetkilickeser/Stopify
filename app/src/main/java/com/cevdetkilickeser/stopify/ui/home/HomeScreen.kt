@@ -26,18 +26,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.genre.GenreData
 import com.cevdetkilickeser.stopify.viewmodel.VMHome
 
 @Composable
-fun HomeScreen(viewModel: VMHome = hiltViewModel()) {
+fun HomeScreen(navController: NavController, viewModel: VMHome = hiltViewModel()) {
     val genreDataList by viewModel.state.collectAsState()
-    GenreGrid(genreDataList = genreDataList)
+    GenreGrid(genreDataList = genreDataList, navController)
 }
 
 @Composable
-fun GenreGrid(genreDataList: List<GenreData>) {
+fun GenreGrid(genreDataList: List<GenreData>, navController: NavController) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
@@ -46,19 +47,21 @@ fun GenreGrid(genreDataList: List<GenreData>) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(genreDataList) { genre ->
-            GenreCard(genreData = genre)
+            GenreCard(genreData = genre, navController)
         }
     }
 }
 
 @Composable
-fun GenreCard(genreData: GenreData) {
+fun GenreCard(genreData: GenreData, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1.5f)
             .padding(all = 2.dp)
-            .clickable { },
+            .clickable {
+                navController.navigate("singe_genre/${genreData.id}")
+            },
         shape = RoundedCornerShape(8.dp)
     ) {
         Box(

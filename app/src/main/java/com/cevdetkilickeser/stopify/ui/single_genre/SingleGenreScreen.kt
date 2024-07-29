@@ -1,6 +1,7 @@
 package com.cevdetkilickeser.stopify.ui.single_genre
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,7 +26,10 @@ import com.cevdetkilickeser.stopify.data.playlist.SingleGenreData
 import com.cevdetkilickeser.stopify.viewmodel.VMSingleGenre
 
 @Composable
-fun SingleGenreScreen(viewModel: VMSingleGenre = hiltViewModel()) {
+fun SingleGenreScreen(genreId: String, viewModel: VMSingleGenre = hiltViewModel()) {
+    LaunchedEffect(key1 = genreId) {
+        viewModel.getSingleGenreData(genreId)
+    }
     val singleGenreDataList by viewModel.state.collectAsState()
     SingleGenreList(singleGenreDataList = singleGenreDataList)
 }
@@ -43,7 +48,8 @@ fun SingleGenreRow(singleGenreData: SingleGenreData) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp),
+            .padding(4.dp)
+            .clickable {  },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(

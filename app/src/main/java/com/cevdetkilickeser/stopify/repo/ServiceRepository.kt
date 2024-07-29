@@ -9,6 +9,6 @@ class ServiceRepository(private val apiService: ApiService) {
     suspend fun getGenreDataList(): List<GenreData> =
         apiService.getGenreResponse().genreDataList
 
-    suspend fun getSingleGenreDataList(): List<SingleGenreData> =
-        apiService.getSingleGenreResponse("132").singleGenreData
+    suspend fun getSingleGenreDataList(genreId: String): List<SingleGenreData> =
+        apiService.getSingleGenreResponse(genreId).singleGenreData
 }
