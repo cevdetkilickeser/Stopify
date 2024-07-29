@@ -46,7 +46,7 @@ fun GenreGrid(genreDataList: List<GenreData>) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(genreDataList) { genre ->
-            GenreCard(genre)
+            GenreCard(genreData = genre)
         }
     }
 }
