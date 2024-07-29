@@ -32,20 +32,20 @@ fun PlaylistScreen(playlistId: String, viewModel: VMPlaylist = hiltViewModel()) 
         viewModel.getPlaylistDataList(playlistId)
     }
     val trackList by viewModel.state.collectAsState()
-    Playlist(trackList = trackList)
+    TrackList(trackList = trackList)
 }
 
 @Composable
-fun Playlist(trackList: List<Track>) {
+fun TrackList(trackList: List<Track>) {
     LazyColumn {
         items(trackList) { track ->
-            PlaylistRow(track = track)
+            TrackItem(track = track)
         }
     }
 }
 
 @Composable
-fun PlaylistRow(track: Track) {
+fun TrackItem(track: Track) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

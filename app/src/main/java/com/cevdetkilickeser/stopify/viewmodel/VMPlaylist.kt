@@ -19,7 +19,7 @@ class VMPlaylist @Inject constructor(private val repository: ServiceRepository) 
     fun getPlaylistDataList(playlistId: String) {
         viewModelScope.launch {
             try {
-                val trackList = repository.trackList(playlistId)
+                val trackList = repository.getTrackList(playlistId)
                 _state.value = trackList
             } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")

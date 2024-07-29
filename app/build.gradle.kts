@@ -68,7 +68,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation ("androidx.compose.material:material:1.4.3")
+    implementation ("androidx.compose.material:material:1.6.8")
 
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

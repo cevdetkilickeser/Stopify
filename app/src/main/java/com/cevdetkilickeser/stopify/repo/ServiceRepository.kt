@@ -13,6 +13,9 @@ class ServiceRepository(private val apiService: ApiService) {
     suspend fun getSingleGenreDataList(genreId: String): List<SingleGenreData> =
         apiService.getSingleGenreResponse(genreId).singleGenreDataList
 
-    suspend fun trackList(playlistId: String): List<Track> =
+    suspend fun getTrackList(playlistId: String): List<Track> =
         apiService.getPlaylistResponse(playlistId).trackList
+
+    suspend fun getSearchResponse(query: String): List<Track> =
+        apiService.getSearchResponse(query).trackList
 }
