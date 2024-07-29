@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cevdetkilickeser.stopify.ui.home.HomeScreen
+import com.cevdetkilickeser.stopify.ui.playlist.PlaylistScreen
 import com.cevdetkilickeser.stopify.ui.single_genre.SingleGenreScreen
 
 @Composable
@@ -26,7 +27,14 @@ fun MainScreen(modifier: Modifier = Modifier) {
             arguments = listOf(navArgument("genreId") { type = NavType.StringType })
         ) { navBackStackEntry ->
             val genreId = navBackStackEntry.arguments?.getString("genreId") ?: return@composable
-            SingleGenreScreen(genreId)
+            SingleGenreScreen(navController, genreId)
+        }
+        composable(
+            "playlist/{playlistId}",
+            arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
+        ) { navBackStackEntry ->
+            val playlistId = navBackStackEntry.arguments?.getString("playlistId") ?: return@composable
+            PlaylistScreen(playlistId)
         }
     }
 }

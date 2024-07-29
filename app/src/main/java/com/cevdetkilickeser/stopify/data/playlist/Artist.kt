@@ -3,11 +3,13 @@ package com.cevdetkilickeser.stopify.data.playlist
 
 import com.google.gson.annotations.SerializedName
 
-data class SingleGenreData(
+data class Artist(
     @SerializedName("id")
     val id: String,
-    @SerializedName("title")
-    val title: String,
+    @SerializedName("name")
+    val name: String,
+    @SerializedName("link")
+    val link: String,
     @SerializedName("picture")
     val picture: String,
     @SerializedName("picture_small")
@@ -19,9 +21,7 @@ data class SingleGenreData(
     @SerializedName("picture_xl")
     val pictureXl: String,
     @SerializedName("tracklist")
-    val tracklist: String,
-    @SerializedName("md5_image")
-    val md5Image: String,
+    val trackList: String,
     @SerializedName("type")
     val type: String
 )

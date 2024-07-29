@@ -1,7 +1,8 @@
-package com.cevdetkilickeser.stopify.ui.single_genre
+package com.cevdetkilickeser.stopify.ui.playlist
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,50 +22,56 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.cevdetkilickeser.stopify.data.single_genre.SingleGenreData
-import com.cevdetkilickeser.stopify.viewmodel.VMSingleGenre
+import com.cevdetkilickeser.stopify.data.playlist.Track
+import com.cevdetkilickeser.stopify.viewmodel.VMPlaylist
 
 @Composable
-fun SingleGenreScreen(navController: NavController, genreId: String, viewModel: VMSingleGenre = hiltViewModel()) {
-    LaunchedEffect(key1 = genreId) {
-        viewModel.getSingleGenreDataList(genreId)
+fun PlaylistScreen(playlistId: String, viewModel: VMPlaylist = hiltViewModel()) {
+    LaunchedEffect(key1 = playlistId) {
+        viewModel.getPlaylistDataList(playlistId)
     }
-    val singleGenreDataList by viewModel.state.collectAsState()
-    SingleGenreList(singleGenreDataList = singleGenreDataList, navController)
+    val trackList by viewModel.state.collectAsState()
+    Playlist(trackList = trackList)
 }
 
 @Composable
-fun SingleGenreList(singleGenreDataList: List<SingleGenreData>, navController: NavController) {
+fun Playlist(trackList: List<Track>) {
     LazyColumn {
-        items(singleGenreDataList) { singleGenre ->
-            SingleGenreRow(singleGenreData = singleGenre, navController)
+        items(trackList) { track ->
+            PlaylistRow(track = track)
         }
     }
 }
 
 @Composable
-fun SingleGenreRow(singleGenreData: SingleGenreData, navController: NavController) {
+fun PlaylistRow(track: Track) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .clickable {
-                navController.navigate("playlist/${singleGenreData.id}")
-            },
+            .clickable { },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = rememberAsyncImagePainter(singleGenreData.picture),
+            painter = rememberAsyncImagePainter(track.artist.picture),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.size(56.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = singleGenreData.title,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 8.dp))
+        Column {
+            Text(
+                text = track.title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Text(
+                text = track.artist.name,
+                style = MaterialTheme.typography
+                    .titleSmall,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
     }
 }
