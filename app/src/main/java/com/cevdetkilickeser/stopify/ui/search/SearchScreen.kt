@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -88,15 +88,15 @@ fun QueryFilter(
             onDismissRequest = { expanded = false }
         ) {
             filterOptions.forEach { option ->
-                DropdownMenuItem(onClick = {
-                    onFilterSelected(option)
-                    expanded = false
-                    coroutineScope.launch {
-                        search(searchQuery, selectedFilter, viewModel)
+                DropdownMenuItem(text = { option },
+                    onClick = {
+                        onFilterSelected(option)
+                        expanded = false
+                        coroutineScope.launch {
+                            search(searchQuery, selectedFilter, viewModel)
+                        }
                     }
-                }) {
-                    Text(option)
-                }
+                )
             }
         }
     }

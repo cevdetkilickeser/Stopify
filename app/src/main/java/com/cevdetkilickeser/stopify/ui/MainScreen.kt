@@ -1,13 +1,13 @@
 package com.cevdetkilickeser.stopify.ui
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,8 +33,8 @@ fun MainScreen(modifier: Modifier = Modifier) {
 
     Scaffold(
         bottomBar = {
-            BottomNavigation {
-                BottomNavigationItem(
+            NavigationBar {
+                NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                     label = { Text("Home") },
                     selected = currentDestination == "home",
@@ -48,7 +48,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 )
-                BottomNavigationItem(
+                NavigationBarItem(
                     icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                     label = { Text("Search") },
                     selected = currentDestination == "search",
@@ -62,7 +62,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 )
-                BottomNavigationItem(
+                NavigationBarItem(
                     icon = { Icon(Icons.Default.Favorite, contentDescription = "Likes") },
                     label = { Text("Likes") },
                     selected = currentDestination == "likes",

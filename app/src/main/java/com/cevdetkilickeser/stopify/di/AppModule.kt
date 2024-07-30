@@ -6,6 +6,7 @@ import com.cevdetkilickeser.stopify.retrofit.ApiService
 import com.cevdetkilickeser.stopify.retrofit.ApiUtils
 import com.cevdetkilickeser.stopify.room.AppDatabase
 import com.cevdetkilickeser.stopify.room.LikeDao
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,5 +34,11 @@ class AppModule {
     @Singleton
     fun provideLikeDao(@ApplicationContext context: Context): LikeDao {
         return AppDatabase.getDatabase(context).getLikeDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
     }
 }
