@@ -2,6 +2,8 @@ package com.cevdetkilickeser.stopify.repo
 
 import com.cevdetkilickeser.stopify.data.genre.GenreData
 import com.cevdetkilickeser.stopify.data.playlist.Track
+import com.cevdetkilickeser.stopify.data.search.AlbumData
+import com.cevdetkilickeser.stopify.data.search.ArtistData
 import com.cevdetkilickeser.stopify.data.single_genre.SingleGenreData
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 
@@ -18,4 +20,10 @@ class ServiceRepository(private val apiService: ApiService) {
 
     suspend fun getSearchResponse(query: String): List<Track> =
         apiService.getSearchResponse(query).trackList
+
+    suspend fun getSearchByArtistResponse(query: String): List<ArtistData> =
+        apiService.getSearchByArtistResponse(query).artistDataList
+
+    suspend fun getSearchByAlbumResponse(query: String): List<AlbumData> =
+        apiService.getSearchByAlbumResponse(query).albumDataList
 }
