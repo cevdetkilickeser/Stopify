@@ -1,11 +1,15 @@
 package com.cevdetkilickeser.stopify.di
 
+import android.content.Context
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 import com.cevdetkilickeser.stopify.retrofit.ApiUtils
+import com.cevdetkilickeser.stopify.room.AppDatabase
+import com.cevdetkilickeser.stopify.room.LikeDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -23,5 +27,11 @@ class AppModule {
     @Singleton
     fun provideApiService(): ApiService {
         return ApiUtils.getApiService()
+    }
+
+    @Provides
+    @Singleton
+    fun provideLikeDao(@ApplicationContext context: Context): LikeDao {
+        return AppDatabase.getDatabase(context).getLikeDao()
     }
 }

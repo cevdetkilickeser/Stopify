@@ -68,7 +68,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation ("androidx.compose.material:material:1.6.8")
+    implementation (libs.androidx.material)
 
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
@@ -79,4 +79,8 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.coil.compose)
+
+    implementation(libs.androidx.room.runtime)
+    kapt(libs.room.compiler)
+    implementation(libs.androidx.room.ktx)
 }
