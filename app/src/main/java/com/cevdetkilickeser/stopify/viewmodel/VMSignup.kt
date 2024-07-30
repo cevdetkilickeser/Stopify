@@ -10,21 +10,21 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMLogin @Inject constructor(
+class VMSignup @Inject constructor(
     private val auth: FirebaseAuth
 ) : ViewModel() {
-    private val _loginState = MutableStateFlow(auth.currentUser != null)
-    val loginState: StateFlow<Boolean> = _loginState
+    private val _signupState = MutableStateFlow(false)
+    val signupState: StateFlow<Boolean> = _signupState
 
-    fun login(email: String, password: String) {
+    fun signup(email: String, password: String) {
         viewModelScope.launch {
             try {
-                auth.signInWithEmailAndPassword(email, password)
+                auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
-                        _loginState.value = task.isSuccessful
+                        _signupState.value = task.isSuccessful
                     }
             } catch (e: Exception) {
-                _loginState.value = false
+                _signupState.value = false
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify
+package com.cevdetkilickeser.stopify.ui.signup
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,29 +16,41 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.cevdetkilickeser.stopify.viewmodel.VMLogin
-
+import androidx.navigation.NavController
+import com.cevdetkilickeser.stopify.R
+import com.cevdetkilickeser.stopify.viewmodel.VMSignup
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(viewModel: VMLogin = hiltViewModel()) {
+fun SignupScreen(navController: NavController, viewModel: VMSignup = hiltViewModel()) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
-    val loginState by viewModel.loginState.collectAsState()
+    val signupState by viewModel.signupState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(signupState) {
+        if (signupState) {
+            navController.navigate("home") {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -50,7 +62,7 @@ fun LoginScreen(viewModel: VMLogin = hiltViewModel()) {
         Spacer(modifier = Modifier.height(128.dp))
 
         Image(
-            painter = painterResource(R.drawable.ic_launcher_background),
+            painter = painterResource(R.drawable.ic_stopify),
             contentDescription = "",
         )
 
@@ -95,7 +107,9 @@ fun LoginScreen(viewModel: VMLogin = hiltViewModel()) {
 
         Button(
             onClick = {
-                viewModel.login(email.value, password.value)
+                coroutineScope.launch {
+                    viewModel.signup(email.value, password.value)
+                }
                 keyboardController?.hide()
             },
             enabled = email.value.isNotEmpty() && password.value.isNotEmpty(),
@@ -106,13 +120,7 @@ fun LoginScreen(viewModel: VMLogin = hiltViewModel()) {
                 containerColor = if (email.value.isNotEmpty() && password.value.isNotEmpty()) Color.Black else Color.Gray
             )
         ) {
-            Text("Login")
+            Text("Signup")
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
 }
