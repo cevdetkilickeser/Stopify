@@ -9,7 +9,7 @@ import com.cevdetkilickeser.stopify.data.entity.History
 @Database(entities = [History::class], version = 1, exportSchema = false)
 abstract class AppDatabase: RoomDatabase() {
 
-    abstract fun getLikeDao(): LikeDao
+    abstract fun getHistoryDao(): HistoryDao
 
     companion object {
         @Volatile

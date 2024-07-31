@@ -5,7 +5,7 @@ import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 import com.cevdetkilickeser.stopify.retrofit.ApiUtils
 import com.cevdetkilickeser.stopify.room.AppDatabase
-import com.cevdetkilickeser.stopify.room.LikeDao
+import com.cevdetkilickeser.stopify.room.HistoryDao
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -32,8 +32,8 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideLikeDao(@ApplicationContext context: Context): LikeDao {
-        return AppDatabase.getDatabase(context).getLikeDao()
+    fun provideLikeDao(@ApplicationContext context: Context): HistoryDao {
+        return AppDatabase.getDatabase(context).getHistoryDao()
     }
 
     @Provides
