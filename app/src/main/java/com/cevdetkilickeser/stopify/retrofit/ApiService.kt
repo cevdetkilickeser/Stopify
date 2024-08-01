@@ -1,5 +1,7 @@
 package com.cevdetkilickeser.stopify.retrofit
 
+import com.cevdetkilickeser.stopify.data.album.AlbumResponse
+import com.cevdetkilickeser.stopify.data.artist.ArtistResponse
 import com.cevdetkilickeser.stopify.data.genre.GenreResponse
 import com.cevdetkilickeser.stopify.data.playlist.PlaylistResponse
 import com.cevdetkilickeser.stopify.data.search.SearchByAlbumResponse
@@ -29,4 +31,11 @@ interface ApiService {
 
     @GET("search/album")
     suspend fun getSearchByAlbumResponse(@Query("q") q: String): SearchByAlbumResponse
+
+    @GET("artist/{id}")
+    suspend fun getArtistResponse(@Path("id") id:String): ArtistResponse
+
+    @GET("album/{id}")
+    suspend fun getAlbumResponse(@Path("id") id:String): AlbumResponse
+
 }

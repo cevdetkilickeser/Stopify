@@ -1,6 +1,7 @@
 package com.cevdetkilickeser.stopify.di
 
 import android.content.Context
+import com.cevdetkilickeser.stopify.repo.HistoryRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 import com.cevdetkilickeser.stopify.retrofit.ApiUtils
@@ -22,6 +23,12 @@ class AppModule {
     @Singleton
     fun provideServiceRepository(apiService: ApiService): ServiceRepository {
         return ServiceRepository(apiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideHistoryRepository(historyDao: HistoryDao): HistoryRepository {
+        return HistoryRepository(historyDao)
     }
 
     @Provides

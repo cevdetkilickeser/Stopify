@@ -10,13 +10,15 @@ import com.cevdetkilickeser.stopify.data.search.ArtistData
 import com.cevdetkilickeser.stopify.repo.HistoryRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMSearch @Inject constructor(private val repository: ServiceRepository, private val historyRepository: HistoryRepository) : ViewModel() {
+class VMSearch @Inject constructor(private val serviceRepository: ServiceRepository, private val historyRepository: HistoryRepository) : ViewModel() {
+
     private val _trackListState = MutableStateFlow<List<Track>>(emptyList())
     val trackListState: StateFlow<List<Track>> = _trackListState
 
@@ -26,8 +28,14 @@ class VMSearch @Inject constructor(private val repository: ServiceRepository, pr
     private val _albumListState = MutableStateFlow<List<AlbumData>>(emptyList())
     val albumListState: StateFlow<List<AlbumData>> = _albumListState
 
-    private val _historyListState = MutableStateFlow<List<History>>(emptyList())
-    val historyListState: StateFlow<List<History>> = _historyListState
+    private val _historyTrackListState = MutableStateFlow<List<History>>(emptyList())
+    val historyTrackListState: StateFlow<List<History>> = _historyTrackListState
+
+    private val _historyArtistListState = MutableStateFlow<List<History>>(emptyList())
+    val historyArtistListState: StateFlow<List<History>> = _historyArtistListState
+
+    private val _historyAlbumListState = MutableStateFlow<List<History>>(emptyList())
+    val historyAlbumListState: StateFlow<List<History>> = _historyAlbumListState
 
     fun clearSearchResult() {
         _trackListState.value = emptyList()
@@ -38,7 +46,7 @@ class VMSearch @Inject constructor(private val repository: ServiceRepository, pr
     fun getSearchResponse(query: String) {
         viewModelScope.launch {
             try {
-                val trackList = repository.getSearchResponse(query)
+                val trackList = serviceRepository.getSearchResponse(query)
                 _trackListState.value = trackList
             } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")
@@ -49,7 +57,7 @@ class VMSearch @Inject constructor(private val repository: ServiceRepository, pr
     fun getSearchByArtistResponse(query: String) {
         viewModelScope.launch {
             try {
-                val artistList = repository.getSearchByArtistResponse(query)
+                val artistList = serviceRepository.getSearchByArtistResponse(query)
                 _artistListState.value = artistList
             } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")
@@ -60,7 +68,7 @@ class VMSearch @Inject constructor(private val repository: ServiceRepository, pr
     fun getSearchByAlbumResponse(query: String) {
         viewModelScope.launch {
             try {
-                val albumList = repository.getSearchByAlbumResponse(query)
+                val albumList = serviceRepository.getSearchByAlbumResponse(query)
                 _albumListState.value = albumList
             } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")
@@ -68,16 +76,15 @@ class VMSearch @Inject constructor(private val repository: ServiceRepository, pr
         }
     }
 
-    fun getHistory(type: String) {
+    fun getHistory(selectedFilter: String) {
         viewModelScope.launch {
-            _historyListState.value = emptyList()
             try {
-                when(type) {
-                    "track" -> _historyListState.value = historyRepository.getTrackHistory()
-                    "artist" -> _historyListState.value = historyRepository.getArtistHistory()
-                    "album" -> _historyListState.value = historyRepository.getAlbumHistory()
+                when (selectedFilter) {
+                    "track" -> _historyTrackListState.value = historyRepository.getTrackHistory()
+                    "artist" -> _historyArtistListState.value = historyRepository.getArtistHistory()
+                    "album" -> _historyAlbumListState.value = historyRepository.getAlbumHistory()
                 }
-            } catch (e:Exception){
+            } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")
             }
         }
@@ -88,4 +95,28 @@ class VMSearch @Inject constructor(private val repository: ServiceRepository, pr
             historyRepository.insertHistory(history)
         }
     }
+
+    fun deleteHistory(history: History, selectedFilter: String) {
+        viewModelScope.launch {
+            historyRepository.deleteHistory(history)
+            getHistory(selectedFilter)
+        }
+    }
+
+    fun search(searchQuery: String, selectedFilter: String) {
+        viewModelScope.launch {
+            if (searchQuery.isNotEmpty()) {
+                delay(1000)
+                when (selectedFilter) {
+                    "track" -> getSearchResponse(searchQuery)
+                    "artist" -> getSearchByArtistResponse(searchQuery)
+                    "album" -> getSearchByAlbumResponse(searchQuery)
+                }
+            } else {
+                clearSearchResult()
+                getHistory(selectedFilter)
+            }
+        }
+    }
 }
+
