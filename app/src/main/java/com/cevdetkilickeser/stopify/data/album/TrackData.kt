@@ -30,9 +30,9 @@ data class TrackData(
     val preview: String,
     @SerializedName("md5_image")
     val md5Image: String,
-    @SerializedName("albumArtist")
+    @SerializedName("artist")
     val trackDataArtist: TrackDataArtist,
-    @SerializedName("trackDataAlbum")
+    @SerializedName("album")
     val trackDataAlbum: TrackDataAlbum,
     @SerializedName("type")
     val type: String
