@@ -14,6 +14,6 @@ fun PlaylistScreen(playlistId: String, viewModel: VMPlaylist = hiltViewModel()) 
         viewModel.getPlaylistDataList(playlistId)
     }
     val trackList by viewModel.state.collectAsState()
-    TrackList(trackList = trackList)
+    TrackList(trackList = trackList, onTrackClick = {})
 }
 
