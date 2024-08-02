@@ -22,6 +22,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cevdetkilickeser.stopify.ui.album.AlbumScreen
+import com.cevdetkilickeser.stopify.ui.artist.ArtistScreen
 import com.cevdetkilickeser.stopify.ui.home.HomeScreen
 import com.cevdetkilickeser.stopify.ui.likes.LikesScreen
 import com.cevdetkilickeser.stopify.ui.login.LoginScreen
@@ -108,6 +110,12 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 composable("home") {
                     HomeScreen(navController)
                 }
+                composable("search") {
+                    SearchScreen(navController)
+                }
+                composable("likes") {
+                    LikesScreen(navController)
+                }
                 composable(
                     "single_genre/{genreId}",
                     arguments = listOf(navArgument("genreId") { type = NavType.StringType })
@@ -122,13 +130,19 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 ) { navBackStackEntry ->
                     val playlistId =
                         navBackStackEntry.arguments?.getString("playlistId") ?: return@composable
-                    PlaylistScreen(playlistId)
+                    PlaylistScreen(navController,playlistId)
                 }
-                composable("search") {
-                    SearchScreen()
+                composable("artist/{artistId}",
+                    arguments = listOf(navArgument("artistId") {type=  NavType.StringType})
+                )  { navBackStackEntry ->
+                    val artistId = navBackStackEntry.arguments?.getString("artistId") ?: return@composable
+                    ArtistScreen(navController = navController, artistId = artistId)
                 }
-                composable("likes") {
-                    LikesScreen(navController)
+                composable("album/{albumId}",
+                    arguments = listOf(navArgument("albumId") {type=  NavType.StringType})
+                )  { navBackStackEntry ->
+                    val albumId = navBackStackEntry.arguments?.getString("albumId") ?: return@composable
+                    AlbumScreen(navController = navController, albumId = albumId)
                 }
             }
         }
