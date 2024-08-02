@@ -71,7 +71,7 @@ fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = rememberAsyncImagePainter(like.track.album.cover),
+                painter = rememberAsyncImagePainter(like.trackImage),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(56.dp)
@@ -79,12 +79,12 @@ fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) 
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    text = like.track.title,
+                    text = like.trackTitle,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 Text(
-                    text = like.track.artist.name,
+                    text = like.trackArtistName,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )

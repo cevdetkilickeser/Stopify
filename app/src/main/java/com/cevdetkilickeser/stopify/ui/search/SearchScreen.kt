@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.entity.History
+import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.playlist.Track
 import com.cevdetkilickeser.stopify.data.search.AlbumData
 import com.cevdetkilickeser.stopify.data.search.ArtistData
@@ -116,7 +119,7 @@ fun SearchScreen(viewModel: VMSearch = hiltViewModel(), auth: FirebaseAuth = Fir
             }
         } else {
             when (selectedFilter) {
-                "track" -> TrackList(trackList = searchResults, onTrackClick = { track ->
+                "track" -> TrackList(trackList = searchResults, likeList = emptyList(), onTrackClick = { track ->
                     viewModel.insertHistory(
                         History(
                             0,
@@ -127,7 +130,7 @@ fun SearchScreen(viewModel: VMSearch = hiltViewModel(), auth: FirebaseAuth = Fir
                             track.link
                         )
                     )
-                })
+                }, onLikeClick = {track, isLike ->}  )
                 "artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
                         viewModel.insertHistory(
                             History(
@@ -198,10 +201,11 @@ fun QueryFilter(
 }
 
 @Composable
-fun TrackList(trackList: List<Track>, onTrackClick: (Track) -> Unit) {
+fun TrackList(trackList: List<Track>, likeList: List<Like>, onTrackClick: (Track) -> Unit, onLikeClick: (Track, Boolean) -> Unit) {
     LazyColumn {
         items(trackList) { track ->
-            TrackItem(track = track, onTrackClick = onTrackClick)
+            val isLike = likeList.any() {it.trackId == track.id}
+            TrackItem(track = track, onTrackClick = onTrackClick, isLike = isLike, onLikeClick = onLikeClick)
         }
     }
 }
@@ -264,33 +268,49 @@ fun HistoryAlbumList(
 }
 
 @Composable
-fun TrackItem(track: Track, onTrackClick: (Track) -> Unit) {
+fun TrackItem(track: Track, isLike: Boolean, onTrackClick: (Track) -> Unit, onLikeClick: (Track, Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
             .clickable { onTrackClick(track) },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(track.album.cover),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.size(56.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                text = track.title,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = 8.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(track.album.cover),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(56.dp)
             )
-            Text(
-                text = track.artist.name,
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(horizontal = 8.dp)
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text(
+                    text = track.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                Text(
+                    text = track.artist.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
+        }
+        IconButton(onClick = { onLikeClick(track, isLike) }) {
+            Icon(
+                imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        onLikeClick(track, isLike)
+                    }
             )
         }
     }

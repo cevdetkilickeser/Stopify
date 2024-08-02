@@ -128,7 +128,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                     SearchScreen()
                 }
                 composable("likes") {
-                    LikesScreen()
+                    LikesScreen(navController)
                 }
             }
         }

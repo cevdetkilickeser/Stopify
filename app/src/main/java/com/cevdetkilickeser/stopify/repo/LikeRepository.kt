@@ -9,5 +9,7 @@ class LikeRepository(private val likeDao: LikeDao) {
 
     suspend fun deleteLike(like: Like) = likeDao.deleteLike(like)
 
+    suspend fun deleteLikeByTrackId(userId: String, trackId: String) = likeDao.deleteLikeByTrackId(userId, trackId)
+
     suspend fun getLikes(userId: String) = likeDao.getLikes(userId)
 }
