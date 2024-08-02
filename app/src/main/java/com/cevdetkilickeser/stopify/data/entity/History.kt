@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 data class History(
     @PrimaryKey(autoGenerate = true) val historyId: Int = 0,
     @ColumnInfo(name = "userId") val userId: String,
+    @ColumnInfo(name = "trackId") val trackId: String? = null,
     @ColumnInfo(name = "trackTitle") val trackTitle: String? = null,
     @ColumnInfo(name = "trackImage") val trackImage: String? = null,
     @ColumnInfo(name = "trackArtistName") val trackArtistName: String? = null,

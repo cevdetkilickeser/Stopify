@@ -15,9 +15,4 @@ class HistoryRepository(private val historyDao: HistoryDao) {
 
     suspend fun deleteHistory(history: History) = historyDao.deleteHistory(history)
 
-    suspend fun deleteTrackHistory() = historyDao.deleteTrackHistory()
-
-    suspend fun deleteArtistHistory() = historyDao.deleteArtistHistory()
-
-    suspend fun deleteAlbumHistory() = historyDao.deleteAlbumHistory()
 }

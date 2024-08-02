@@ -24,13 +24,4 @@ interface HistoryDao {
 
     @Delete
     suspend fun deleteHistory(history: History)
-
-    @Query("DELETE from history_table WHERE trackTitle IS NOT NULL")
-    suspend fun deleteTrackHistory()
-
-    @Query("DELETE from history_table WHERE artistId IS NOT NULL")
-    suspend fun deleteArtistHistory()
-
-    @Query("DELETE from history_table WHERE albumId IS NOT NULL")
-    suspend fun deleteAlbumHistory()
 }
