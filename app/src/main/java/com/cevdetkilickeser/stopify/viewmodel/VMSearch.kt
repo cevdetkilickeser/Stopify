@@ -37,13 +37,13 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
     private val _historyAlbumListState = MutableStateFlow<List<History>>(emptyList())
     val historyAlbumListState: StateFlow<List<History>> = _historyAlbumListState
 
-    fun clearSearchResult() {
+    private fun clearSearchResult() {
         _trackListState.value = emptyList()
         _artistListState.value = emptyList()
         _albumListState.value = emptyList()
     }
 
-    fun getSearchResponse(query: String) {
+    private fun getSearchResponse(query: String) {
         viewModelScope.launch {
             try {
                 val trackList = serviceRepository.getSearchResponse(query)
@@ -54,7 +54,7 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
         }
     }
 
-    fun getSearchByArtistResponse(query: String) {
+    private fun getSearchByArtistResponse(query: String) {
         viewModelScope.launch {
             try {
                 val artistList = serviceRepository.getSearchByArtistResponse(query)
@@ -65,7 +65,7 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
         }
     }
 
-    fun getSearchByAlbumResponse(query: String) {
+    private fun getSearchByAlbumResponse(query: String) {
         viewModelScope.launch {
             try {
                 val albumList = serviceRepository.getSearchByAlbumResponse(query)
@@ -103,18 +103,17 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
         }
     }
 
-    fun search(searchQuery: String, selectedFilter: String) {
+    fun search(searchQuery: String, selectedFilter: String, viewModel: VMSearch) {
         viewModelScope.launch {
             if (searchQuery.isNotEmpty()) {
                 delay(1000)
                 when (selectedFilter) {
-                    "track" -> getSearchResponse(searchQuery)
-                    "artist" -> getSearchByArtistResponse(searchQuery)
-                    "album" -> getSearchByAlbumResponse(searchQuery)
+                    "track" -> viewModel.getSearchResponse(searchQuery)
+                    "artist" -> viewModel.getSearchByArtistResponse(searchQuery)
+                    "album" -> viewModel.getSearchByAlbumResponse(searchQuery)
                 }
             } else {
-                clearSearchResult()
-                getHistory(selectedFilter)
+                viewModel.clearSearchResult()
             }
         }
     }
