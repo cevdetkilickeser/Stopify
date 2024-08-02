@@ -1,29 +1,14 @@
 package com.cevdetkilickeser.stopify.ui.search
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -37,29 +22,28 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberAsyncImagePainter
+import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.data.entity.History
-import com.cevdetkilickeser.stopify.data.entity.Like
-import com.cevdetkilickeser.stopify.data.playlist.Track
-import com.cevdetkilickeser.stopify.data.search.AlbumData
-import com.cevdetkilickeser.stopify.data.search.ArtistData
+import com.cevdetkilickeser.stopify.ui.component.AlbumList
+import com.cevdetkilickeser.stopify.ui.component.ArtistList
+import com.cevdetkilickeser.stopify.ui.component.HistoryAlbumList
+import com.cevdetkilickeser.stopify.ui.component.HistoryArtistList
+import com.cevdetkilickeser.stopify.ui.component.HistoryTrackList
+import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SearchScreen(viewModel: VMSearch = hiltViewModel(), auth: FirebaseAuth = FirebaseAuth.getInstance()) {
+fun SearchScreen(navController: NavController, viewModel: VMSearch = hiltViewModel(), auth: FirebaseAuth = FirebaseAuth.getInstance()) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("track") }
+    var selectedFilter by rememberSaveable { mutableStateOf("track") }
     val filterOptions = listOf("track", "artist", "album")
 
     LaunchedEffect(searchQuery, selectedFilter, viewModel) {
-        search(searchQuery, selectedFilter, viewModel)
+        viewModel.search(searchQuery, selectedFilter, viewModel)
         viewModel.getHistory(selectedFilter)
     }
 
@@ -98,72 +82,76 @@ fun SearchScreen(viewModel: VMSearch = hiltViewModel(), auth: FirebaseAuth = Fir
 
         if (searchQuery.isEmpty()) {
             when (selectedFilter) {
-                "track" -> HistoryTrackList(historyList = historyTrackList, onHistoryClick = { history ->
-
-                    }, onDeleteHistoryClick = { history ->
+                "track" -> HistoryTrackList(historyList = historyTrackList, onHistoryClick = { history -> },
+                    onDeleteHistoryClick = { history ->
                         viewModel.deleteHistory(history,selectedFilter)
                     }
                 )
                 "artist" -> HistoryArtistList(historyList = historyArtistList, onHistoryClick = { history ->
-
-                    }, onDeleteHistoryClick = { history ->
+                    navController.navigate("artist/{${history.artistId}}")
+                },
+                    onDeleteHistoryClick = { history ->
                     viewModel.deleteHistory(history,selectedFilter)
                     }
                 )
                 "album" -> HistoryAlbumList(historyList = historyAlbumList, onHistoryClick = { history ->
-
-                    }, onDeleteHistoryClick = { history ->
+                    navController.navigate("artist/{${history.albumId}}")
+                },
+                    onDeleteHistoryClick = { history ->
                     viewModel.deleteHistory(history,selectedFilter)
                     }
                 )
             }
         } else {
             when (selectedFilter) {
-                "track" -> TrackList(trackList = searchResults, likeList = emptyList(), onTrackClick = { track ->
-                    viewModel.insertHistory(
-                        History(
-                            0,
-                            auth.currentUser!!.toString(),
-                            track.title,
-                            track.artist.picture,
-                            track.artist.name,
-                            track.link
+                "track" -> TrackList(isSearch = true, trackList = searchResults, onTrackClick = { track ->
+                    val isHistory = historyTrackList.any {it.trackId == track.id}
+                    if (!isHistory){
+                        viewModel.insertHistory(
+                            History(
+                                historyId = 0,
+                                userId = auth.currentUser!!.toString(),
+                                trackId = track.id,
+                                trackTitle = track.title,
+                                trackImage = track.album.cover,
+                                trackArtistName = track.artist.name,
+                                trackLink = track.link
+                            )
                         )
-                    )
-                }, onLikeClick = {track, isLike ->}  )
+                    }
+
+                }, onLikeClick = {track, isLike -> })
+
                 "artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
+                    val isHistory = historyArtistList.any {it.artistId == artist.id}
+                    if (!isHistory){
+                        viewModel.insertHistory(
+                            History(
+                                historyId = 0,
+                                userId = auth.currentUser!!.toString(),
+                                artistId = artist.id,
+                                artistName = artist.name,
+                                artistImage = artist.picture
+                            )
+                        )
+                    }
+                    navController.navigate("artist/{${artist.id}}")
+                })
+                "album" -> AlbumList(albumList = searchByAlbumResults, onAlbumClick = { album ->
+                    val isHistory = historyArtistList.any {it.albumId == album.id}
+                    if (!isHistory){
                         viewModel.insertHistory(
                             History(
                                 0,
                                 auth.currentUser!!.toString(),
-                                null,
-                                null,
-                                null,
-                                null,
-                                artist.id,
-                                artist.name,
-                                artist.picture
+                                albumId = album.id,
+                                albumTitle = album.title,
+                                albumImage = album.cover,
+                                albumArtistName = album.artist.name
                             )
                         )
-                    })
-                "album" -> AlbumList(albumList = searchByAlbumResults, onAlbumClick = { album ->
-                    viewModel.insertHistory(
-                        History(
-                            0,
-                            auth.currentUser!!.toString(),
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            album.id,
-                            album.title,
-                            album.cover,
-                            album.artist.name
-                        )
-                    )
+                    }
+                    navController.navigate("album/${album.id}")
                 })
             }
         }
@@ -192,318 +180,10 @@ fun QueryFilter(
                     expanded = false
                     coroutineScope.launch {
                         viewModel.getHistory(selectedFilter)
-                        search(searchQuery, selectedFilter, viewModel)
+                            viewModel.search(searchQuery, selectedFilter, viewModel)
                     }
                 })
             }
         }
-    }
-}
-
-@Composable
-fun TrackList(trackList: List<Track>, likeList: List<Like>, onTrackClick: (Track) -> Unit, onLikeClick: (Track, Boolean) -> Unit) {
-    LazyColumn {
-        items(trackList) { track ->
-            val isLike = likeList.any() {it.trackId == track.id}
-            TrackItem(track = track, onTrackClick = onTrackClick, isLike = isLike, onLikeClick = onLikeClick)
-        }
-    }
-}
-
-@Composable
-fun ArtistList(artistList: List<ArtistData>, onArtistClick: (ArtistData) -> Unit) {
-    LazyColumn {
-        items(artistList) { artist ->
-            ArtistItem(artist = artist, onArtistClick = onArtistClick)
-        }
-    }
-}
-
-@Composable
-fun AlbumList(albumList: List<AlbumData>, onAlbumClick: (AlbumData) -> Unit) {
-    LazyColumn {
-        items(albumList) { album ->
-            AlbumtItem(album = album, onAlbumClick = onAlbumClick)
-        }
-    }
-}
-
-@Composable
-fun HistoryTrackList(
-    historyList: List<History>,
-    onHistoryClick: (History) -> Unit,
-    onDeleteHistoryClick: (History) -> Unit
-) {
-    LazyColumn {
-        items(historyList) { history ->
-            HistoryTrackItem(history = history, onHistoryClick = onHistoryClick, onDeleteHistoryClick = onDeleteHistoryClick)
-        }
-    }
-}
-
-@Composable
-fun HistoryArtistList(
-    historyList: List<History>,
-    onHistoryClick: (History) -> Unit,
-    onDeleteHistoryClick: (History) -> Unit
-) {
-    LazyColumn {
-        items(historyList) { history ->
-            HistoryArtistItem(history = history, onHistoryClick = onHistoryClick, onDeleteHistoryClick = onDeleteHistoryClick)
-        }
-    }
-}
-
-@Composable
-fun HistoryAlbumList(
-    historyList: List<History>,
-    onHistoryClick: (History) -> Unit,
-    onDeleteHistoryClick: (History) -> Unit
-) {
-    LazyColumn {
-        items(historyList) { history ->
-            HistoryAlbumItem(history = history, onHistoryClick = onHistoryClick, onDeleteHistoryClick = onDeleteHistoryClick)
-        }
-    }
-}
-
-@Composable
-fun TrackItem(track: Track, isLike: Boolean, onTrackClick: (Track) -> Unit, onLikeClick: (Track, Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clickable { onTrackClick(track) },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(track.album.cover),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(56.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = track.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-                Text(
-                    text = track.artist.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
-        }
-        IconButton(onClick = { onLikeClick(track, isLike) }) {
-            Icon(
-                imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clickable {
-                        onLikeClick(track, isLike)
-                    }
-            )
-        }
-    }
-}
-
-@Composable
-fun ArtistItem(artist: ArtistData, onArtistClick: (ArtistData) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clickable { onArtistClick(artist) },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = rememberAsyncImagePainter(artist.picture),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.size(56.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = artist.name,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-    }
-}
-
-@Composable
-fun AlbumtItem(album: AlbumData, onAlbumClick: (AlbumData) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clickable { onAlbumClick(album) },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = rememberAsyncImagePainter(album.cover),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.size(56.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                text = album.title,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-            Text(
-                text = album.artist.name,
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun HistoryTrackItem(
-    history: History,
-    onHistoryClick: (History) -> Unit,
-    onDeleteHistoryClick: (History) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clickable { onHistoryClick(history) },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(history.trackImage),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(56.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = history.trackTitle!!,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-                Text(
-                    text = history.trackArtistName!!,
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
-        }
-        IconButton(onClick = { onDeleteHistoryClick(history) }) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-        }
-    }
-}
-
-@Composable
-fun HistoryArtistItem(
-    history: History,
-    onHistoryClick: (History) -> Unit,
-    onDeleteHistoryClick: (History) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clickable { onHistoryClick(history) },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(history.artistImage),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(56.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = history.artistName!!,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
-        }
-        IconButton(onClick = { onDeleteHistoryClick(history) }) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-        }
-    }
-}
-
-@Composable
-fun HistoryAlbumItem(
-    history: History,
-    onHistoryClick: (History) -> Unit,
-    onDeleteHistoryClick: (History) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clickable { onHistoryClick(history) },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(history.albumImage),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(56.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = history.albumTitle!!,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-                Text(
-                    text = history.albumArtistName!!,
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
-        }
-        IconButton(onClick = { onDeleteHistoryClick(history) }) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-        }
-    }
-}
-
-suspend fun search(searchQuery: String, selectedFilter: String, viewModel: VMSearch) {
-    if (searchQuery.isNotEmpty()) {
-        delay(1000)
-        when (selectedFilter) {
-            "track" -> viewModel.getSearchResponse(searchQuery)
-            "artist" -> viewModel.getSearchByArtistResponse(searchQuery)
-            "album" -> viewModel.getSearchByAlbumResponse(searchQuery)
-        }
-    } else {
-        viewModel.clearSearchResult()
     }
 }
