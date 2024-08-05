@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,14 +34,13 @@ import com.cevdetkilickeser.stopify.ui.component.HistoryArtistList
 import com.cevdetkilickeser.stopify.ui.component.HistoryTrackList
 import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 @Composable
-fun SearchScreen(navController: NavController, viewModel: VMSearch = hiltViewModel(), auth: FirebaseAuth = FirebaseAuth.getInstance()) {
+fun SearchScreen(navController: NavController, userId: String, viewModel: VMSearch = hiltViewModel()) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var selectedFilter by rememberSaveable { mutableStateOf("track") }
-    val filterOptions = listOf("track", "artist", "album")
+    val filterOptions = listOf("Track", "Artist", "Album")
 
     LaunchedEffect(searchQuery, selectedFilter, viewModel) {
         viewModel.search(searchQuery, selectedFilter, viewModel)
@@ -110,7 +110,7 @@ fun SearchScreen(navController: NavController, viewModel: VMSearch = hiltViewMod
                         viewModel.insertHistory(
                             History(
                                 historyId = 0,
-                                userId = auth.currentUser!!.toString(),
+                                userId = userId,
                                 trackId = track.id,
                                 trackTitle = track.title,
                                 trackImage = track.album.cover,
@@ -120,7 +120,7 @@ fun SearchScreen(navController: NavController, viewModel: VMSearch = hiltViewMod
                         )
                     }
 
-                }, onLikeClick = {track, isLike -> })
+                })
 
                 "artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
                     val isHistory = historyArtistList.any {it.artistId == artist.id}
@@ -128,7 +128,7 @@ fun SearchScreen(navController: NavController, viewModel: VMSearch = hiltViewMod
                         viewModel.insertHistory(
                             History(
                                 historyId = 0,
-                                userId = auth.currentUser!!.toString(),
+                                userId = userId,
                                 artistId = artist.id,
                                 artistName = artist.name,
                                 artistImage = artist.picture
@@ -142,8 +142,8 @@ fun SearchScreen(navController: NavController, viewModel: VMSearch = hiltViewMod
                     if (!isHistory){
                         viewModel.insertHistory(
                             History(
-                                0,
-                                auth.currentUser!!.toString(),
+                                historyId = 0,
+                                userId = userId,
                                 albumId = album.id,
                                 albumTitle = album.title,
                                 albumImage = album.cover,
@@ -170,7 +170,7 @@ fun QueryFilter(
     val coroutineScope = rememberCoroutineScope()
 
     Box {
-        Button(onClick = { expanded = true }) {
+        Button(onClick = { expanded = true }, modifier = Modifier.width(90.dp)) {
             Text(selectedFilter)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

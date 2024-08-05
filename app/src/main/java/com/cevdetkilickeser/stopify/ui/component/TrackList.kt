@@ -36,7 +36,7 @@ fun TrackList(
     trackList: List<Track>,
     likeList: List<Like> = emptyList(),
     onTrackClick: (Track) -> Unit,
-    onLikeClick: (Track, Boolean) -> Unit
+    onLikeClick: (Track, Boolean) -> Unit = { _, _ -> }
 ) {
     LazyColumn {
         items(trackList) { track ->

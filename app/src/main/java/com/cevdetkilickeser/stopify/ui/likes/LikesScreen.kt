@@ -31,14 +31,13 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.viewmodel.VMLikes
-import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun LikesScreen(navController: NavController, viewModel: VMLikes = hiltViewModel(), auth: FirebaseAuth = FirebaseAuth.getInstance()) {
+fun LikesScreen(navController: NavController, userId: String, viewModel: VMLikes = hiltViewModel()) {
     val likes by viewModel.likeListState.collectAsState()
 
-    LaunchedEffect(auth) {
-        viewModel.getLikes(auth.currentUser!!.toString())
+    LaunchedEffect(userId) {
+        viewModel.getLikes(userId)
     }
 
     LikeList(likes = likes, onLikeClick = { like -> },

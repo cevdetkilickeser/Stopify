@@ -9,11 +9,10 @@ import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMPlaylist
-import com.google.firebase.auth.FirebaseAuth
+import com.google.gson.Gson
 
 @Composable
-fun PlaylistScreen(navController: NavController, playlistId: String, viewModel: VMPlaylist = hiltViewModel()) {
-    val userId = FirebaseAuth.getInstance().currentUser!!.toString()
+fun PlaylistScreen(navController: NavController, playlistId: String, userId: String, viewModel: VMPlaylist = hiltViewModel()) {
     LaunchedEffect(key1 = playlistId, key2 = userId) {
         viewModel.getPlaylistDataList(playlistId)
         viewModel.getLikes(userId)
@@ -26,7 +25,9 @@ fun PlaylistScreen(navController: NavController, playlistId: String, viewModel: 
         trackList = trackList,
         likeList = likeList,
         onTrackClick = { track ->
-            //navigate to MusicPlayerScreen
+            val gson  = Gson()
+            val trackJson = gson.toJson(track)
+            navController.navigate("player/$trackJson")
         },
         onLikeClick = { track, isLike ->
         if (isLike){
