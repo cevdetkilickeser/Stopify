@@ -3,11 +3,9 @@ package com.cevdetkilickeser.stopify.data.artist
 
 import com.google.gson.annotations.SerializedName
 
-data class ArtistTop(
+data class ArtistAlbum(
     @SerializedName("data")
-    val artistTopTracksDataList: List<ArtistTopTracks>,
+    val artistAlbumDataList: List<ArtistAlbumData>,
     @SerializedName("total")
-    val total: Int,
-    @SerializedName("next")
-    val next: String
+    val total: Int
 )
