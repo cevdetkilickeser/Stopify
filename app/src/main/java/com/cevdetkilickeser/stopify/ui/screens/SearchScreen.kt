@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.search
+package com.cevdetkilickeser.stopify.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,16 +34,17 @@ import com.cevdetkilickeser.stopify.ui.component.HistoryArtistList
 import com.cevdetkilickeser.stopify.ui.component.HistoryTrackList
 import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(navController: NavController, userId: String, viewModel: VMSearch = hiltViewModel()) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    var selectedFilter by rememberSaveable { mutableStateOf("track") }
+    var selectedFilter by rememberSaveable { mutableStateOf("Track") }
     val filterOptions = listOf("Track", "Artist", "Album")
 
     LaunchedEffect(searchQuery, selectedFilter, viewModel) {
-        viewModel.search(searchQuery, selectedFilter, viewModel)
+        search(searchQuery, selectedFilter, viewModel)
         viewModel.getHistory(selectedFilter)
     }
 
@@ -82,20 +83,20 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
 
         if (searchQuery.isEmpty()) {
             when (selectedFilter) {
-                "track" -> HistoryTrackList(historyList = historyTrackList, onHistoryClick = { history -> },
+                "Track" -> HistoryTrackList(historyList = historyTrackList, onHistoryClick = { history -> },
                     onDeleteHistoryClick = { history ->
                         viewModel.deleteHistory(history,selectedFilter)
                     }
                 )
-                "artist" -> HistoryArtistList(historyList = historyArtistList, onHistoryClick = { history ->
-                    navController.navigate("artist/{${history.artistId}}")
+                "Artist" -> HistoryArtistList(historyList = historyArtistList, onHistoryClick = { history ->
+                    navController.navigate("artist/${history.artistId}")
                 },
                     onDeleteHistoryClick = { history ->
                     viewModel.deleteHistory(history,selectedFilter)
                     }
                 )
-                "album" -> HistoryAlbumList(historyList = historyAlbumList, onHistoryClick = { history ->
-                    navController.navigate("artist/{${history.albumId}}")
+                "Album" -> HistoryAlbumList(historyList = historyAlbumList, onHistoryClick = { history ->
+                    navController.navigate("album/${history.albumId}")
                 },
                     onDeleteHistoryClick = { history ->
                     viewModel.deleteHistory(history,selectedFilter)
@@ -104,7 +105,7 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
             }
         } else {
             when (selectedFilter) {
-                "track" -> TrackList(isSearch = true, trackList = searchResults, onTrackClick = { track ->
+                "Track" -> TrackList(isSearch = true, trackList = searchResults, onTrackClick = { track ->
                     val isHistory = historyTrackList.any {it.trackId == track.id}
                     if (!isHistory){
                         viewModel.insertHistory(
@@ -122,7 +123,7 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
 
                 })
 
-                "artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
+                "Artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
                     val isHistory = historyArtistList.any {it.artistId == artist.id}
                     if (!isHistory){
                         viewModel.insertHistory(
@@ -135,10 +136,10 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                             )
                         )
                     }
-                    navController.navigate("artist/{${artist.id}}")
+                    navController.navigate("artist/${artist.id}")
                 })
-                "album" -> AlbumList(albumList = searchByAlbumResults, onAlbumClick = { album ->
-                    val isHistory = historyArtistList.any {it.albumId == album.id}
+                "Album" -> AlbumList(albumList = searchByAlbumResults, onAlbumClick = { album ->
+                    val isHistory = historyAlbumList.any {it.albumId == album.id}
                     if (!isHistory){
                         viewModel.insertHistory(
                             History(
@@ -180,10 +181,25 @@ fun QueryFilter(
                     expanded = false
                     coroutineScope.launch {
                         viewModel.getHistory(selectedFilter)
-                            viewModel.search(searchQuery, selectedFilter, viewModel)
+                        search(searchQuery, selectedFilter, viewModel)
                     }
                 })
             }
         }
+    }
+}
+
+
+
+suspend fun search(searchQuery: String, selectedFilter: String, viewModel: VMSearch) {
+    if (searchQuery.isNotEmpty()) {
+        delay(1000)
+        when (selectedFilter) {
+            "Track" -> viewModel.getSearchResponse(searchQuery)
+            "Artist" -> viewModel.getSearchByArtistResponse(searchQuery)
+            "Album" -> viewModel.getSearchByAlbumResponse(searchQuery)
+        }
+    } else {
+        viewModel.clearSearchResult()
     }
 }

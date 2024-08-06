@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.home
+package com.cevdetkilickeser.stopify.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

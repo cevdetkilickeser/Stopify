@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.signup
+package com.cevdetkilickeser.stopify.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

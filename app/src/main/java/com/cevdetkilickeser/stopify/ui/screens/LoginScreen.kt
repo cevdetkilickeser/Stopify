@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.login
+package com.cevdetkilickeser.stopify.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -22,7 +23,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,7 +34,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.viewmodel.VMLogin
-import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,7 +42,7 @@ fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val loginState by viewModel.loginState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val errorState by viewModel.errorState.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(loginState) {
@@ -109,9 +108,7 @@ fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel
 
         Button(
             onClick = {
-                coroutineScope.launch {
-                    viewModel.login(email.value, password.value)
-                }
+                viewModel.login(email.value, password.value)
                 keyboardController?.hide()
             },
             enabled = email.value.isNotEmpty() && password.value.isNotEmpty(),
@@ -126,6 +123,16 @@ fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        errorState?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         Text(text = "Don't you have an account?")
 
