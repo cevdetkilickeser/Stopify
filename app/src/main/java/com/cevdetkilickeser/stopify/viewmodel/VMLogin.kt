@@ -16,12 +16,17 @@ class VMLogin @Inject constructor(
     private val _loginState = MutableStateFlow(auth.currentUser != null)
     val loginState: StateFlow<Boolean> = _loginState
 
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         _loginState.value = task.isSuccessful
+                    }.addOnFailureListener { error ->
+                        _errorState.value = error.message
                     }
             } catch (e: Exception) {
                 _loginState.value = false
