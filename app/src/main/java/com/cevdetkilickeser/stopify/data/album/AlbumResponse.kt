@@ -54,7 +54,7 @@ data class AlbumResponse(
     val explicitContentCover: Int,
     @SerializedName("contributors")
     val contributors: List<Contributor>,
-    @SerializedName("albumArtist")
+    @SerializedName("artist")
     val albumArtist: AlbumArtist,
     @SerializedName("type")
     val type: String,
