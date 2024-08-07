@@ -40,7 +40,9 @@ fun LikesScreen(navController: NavController, userId: String, viewModel: VMLikes
         viewModel.getLikes(userId)
     }
 
-    LikeList(likes = likes, onLikeClick = { like -> },
+    LikeList(likes = likes, onLikeClick = { like ->
+        navController.navigate("player/${like.trackPreview}")
+    },
         onDeleteLikeClick = { like ->
             viewModel.deleteLike(like)
         })

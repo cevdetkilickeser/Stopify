@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
-import com.cevdetkilickeser.stopify.data.artist.ArtistAlbumData
+import com.cevdetkilickeser.stopify.data.model.artist.ArtistAlbumData
 
 @Composable
 fun ArtistAlbumList(albumList: List<ArtistAlbumData>, onAlbumClick: (ArtistAlbumData) -> Unit) {

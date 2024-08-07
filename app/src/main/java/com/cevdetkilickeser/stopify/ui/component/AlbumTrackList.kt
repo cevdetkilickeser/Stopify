@@ -27,7 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
-import com.cevdetkilickeser.stopify.data.album.TrackData
+import com.cevdetkilickeser.stopify.data.model.album.TrackData
 import com.cevdetkilickeser.stopify.data.entity.Like
 
 @Composable

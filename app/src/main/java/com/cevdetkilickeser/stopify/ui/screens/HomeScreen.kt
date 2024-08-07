@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.cevdetkilickeser.stopify.data.genre.GenreData
+import com.cevdetkilickeser.stopify.data.model.genre.GenreData
 import com.cevdetkilickeser.stopify.viewmodel.VMHome
 
 @Composable

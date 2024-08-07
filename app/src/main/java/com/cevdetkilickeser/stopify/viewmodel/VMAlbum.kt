@@ -2,7 +2,7 @@ package com.cevdetkilickeser.stopify.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cevdetkilickeser.stopify.data.album.AlbumResponse
+import com.cevdetkilickeser.stopify.data.model.album.AlbumResponse
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository

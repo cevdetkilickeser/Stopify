@@ -52,7 +52,7 @@ fun AlbumScreen(
                 trackList = album!!.tracks.trackDataList,
                 likeList = likeList,
                 onTrackClick = { track ->
-                    navController.navigate("player")
+                    navController.navigate("player/${track.preview}")
                 },
                 onLikeClick = { track, isLike ->
                     if (isLike) {

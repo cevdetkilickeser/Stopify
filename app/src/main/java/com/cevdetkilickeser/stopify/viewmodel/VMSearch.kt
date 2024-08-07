@@ -4,9 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.data.entity.History
-import com.cevdetkilickeser.stopify.data.playlist.Track
-import com.cevdetkilickeser.stopify.data.search.AlbumData
-import com.cevdetkilickeser.stopify.data.search.ArtistData
+import com.cevdetkilickeser.stopify.data.model.playlist.Track
+import com.cevdetkilickeser.stopify.data.model.search.AlbumData
+import com.cevdetkilickeser.stopify.data.model.search.ArtistData
 import com.cevdetkilickeser.stopify.repo.HistoryRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

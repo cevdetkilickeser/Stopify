@@ -1,14 +1,14 @@
 package com.cevdetkilickeser.stopify.retrofit
 
-import com.cevdetkilickeser.stopify.data.album.AlbumResponse
-import com.cevdetkilickeser.stopify.data.artist.ArtistAlbum
-import com.cevdetkilickeser.stopify.data.artist.ArtistResponse
-import com.cevdetkilickeser.stopify.data.genre.GenreResponse
-import com.cevdetkilickeser.stopify.data.playlist.PlaylistResponse
-import com.cevdetkilickeser.stopify.data.search.SearchByAlbumResponse
-import com.cevdetkilickeser.stopify.data.search.SearchByArtistResponse
-import com.cevdetkilickeser.stopify.data.search.SearchResponse
-import com.cevdetkilickeser.stopify.data.single_genre.SingleGenreResponse
+import com.cevdetkilickeser.stopify.data.model.album.AlbumResponse
+import com.cevdetkilickeser.stopify.data.model.artist.ArtistAlbum
+import com.cevdetkilickeser.stopify.data.model.artist.ArtistResponse
+import com.cevdetkilickeser.stopify.data.model.genre.GenreResponse
+import com.cevdetkilickeser.stopify.data.model.playlist.PlaylistResponse
+import com.cevdetkilickeser.stopify.data.model.search.SearchByAlbumResponse
+import com.cevdetkilickeser.stopify.data.model.search.SearchByArtistResponse
+import com.cevdetkilickeser.stopify.data.model.search.SearchResponse
+import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

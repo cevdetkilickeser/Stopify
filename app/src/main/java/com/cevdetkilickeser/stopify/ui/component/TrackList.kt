@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.entity.Like
-import com.cevdetkilickeser.stopify.data.playlist.Track
+import com.cevdetkilickeser.stopify.data.model.playlist.Track
 
 @Composable
 fun TrackList(
@@ -40,7 +40,7 @@ fun TrackList(
 ) {
     LazyColumn {
         items(trackList) { track ->
-            val isLike = likeList.any() { it.trackId == track.id }
+            val isLike = likeList.any { it.trackId == track.id }
             TrackItem(
                 isSearch = isSearch,
                 track = track,

@@ -3,7 +3,7 @@ package com.cevdetkilickeser.stopify.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cevdetkilickeser.stopify.data.genre.GenreData
+import com.cevdetkilickeser.stopify.data.model.genre.GenreData
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

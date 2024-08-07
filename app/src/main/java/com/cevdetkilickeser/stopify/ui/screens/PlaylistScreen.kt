@@ -7,13 +7,11 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.data.entity.Like
-import com.cevdetkilickeser.stopify.data.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.TrackList
-import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 import com.cevdetkilickeser.stopify.viewmodel.VMPlaylist
 
 @Composable
-fun PlaylistScreen(navController: NavController, playlistId: String, userId: String, viewModel: VMPlaylist = hiltViewModel(), viewModelPlayer: VMMusicPlayer = hiltViewModel()) {
+fun PlaylistScreen(navController: NavController, playlistId: String, userId: String, viewModel: VMPlaylist = hiltViewModel()) {
 
     LaunchedEffect(key1 = playlistId, key2 = userId) {
         viewModel.getPlaylistDataList(playlistId)
@@ -28,13 +26,7 @@ fun PlaylistScreen(navController: NavController, playlistId: String, userId: Str
         trackList = trackList,
         likeList = likeList,
         onTrackClick = { track ->
-            val startIndex = trackList.indexOf(track)
-            val playerTrackList = mutableListOf<PlayerTrack>()
-            trackList.forEach {
-                playerTrackList.add(PlayerTrack(it.title,it.album.cover,it.artist.name,it.preview))
-            }
-
-            navController.navigate("player")
+            navController.navigate("player/${track.preview}")
         },
         onLikeClick = { track, isLike ->
         if (isLike){

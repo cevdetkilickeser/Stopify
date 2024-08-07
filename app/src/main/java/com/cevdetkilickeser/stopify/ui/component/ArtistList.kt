@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
-import com.cevdetkilickeser.stopify.data.search.ArtistData
+import com.cevdetkilickeser.stopify.data.model.search.ArtistData
 
 
 @Composable

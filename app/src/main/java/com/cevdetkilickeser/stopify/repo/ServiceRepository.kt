@@ -1,13 +1,13 @@
 package com.cevdetkilickeser.stopify.repo
 
-import com.cevdetkilickeser.stopify.data.album.AlbumResponse
-import com.cevdetkilickeser.stopify.data.artist.ArtistAlbumData
-import com.cevdetkilickeser.stopify.data.artist.ArtistResponse
-import com.cevdetkilickeser.stopify.data.genre.GenreData
-import com.cevdetkilickeser.stopify.data.playlist.Track
-import com.cevdetkilickeser.stopify.data.search.AlbumData
-import com.cevdetkilickeser.stopify.data.search.ArtistData
-import com.cevdetkilickeser.stopify.data.single_genre.SingleGenreData
+import com.cevdetkilickeser.stopify.data.model.album.AlbumResponse
+import com.cevdetkilickeser.stopify.data.model.artist.ArtistAlbumData
+import com.cevdetkilickeser.stopify.data.model.artist.ArtistResponse
+import com.cevdetkilickeser.stopify.data.model.genre.GenreData
+import com.cevdetkilickeser.stopify.data.model.playlist.Track
+import com.cevdetkilickeser.stopify.data.model.search.AlbumData
+import com.cevdetkilickeser.stopify.data.model.search.ArtistData
+import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 
 class ServiceRepository(private val apiService: ApiService) {

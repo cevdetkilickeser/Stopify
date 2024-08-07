@@ -83,7 +83,11 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
 
         if (searchQuery.isEmpty()) {
             when (selectedFilter) {
-                "Track" -> HistoryTrackList(historyList = historyTrackList, onHistoryClick = { history -> },
+                "Track" -> HistoryTrackList(
+                    historyList = historyTrackList,
+                    onHistoryClick = { history ->
+                    navController.navigate("player/${history.trackPreview}")
+                },
                     onDeleteHistoryClick = { history ->
                         viewModel.deleteHistory(history,selectedFilter)
                     }
@@ -116,11 +120,11 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                                 trackTitle = track.title,
                                 trackImage = track.album.cover,
                                 trackArtistName = track.artist.name,
-                                trackLink = track.link
+                                trackPreview = track.link
                             )
                         )
                     }
-
+                    navController.navigate("player/${track.preview}")
                 })
 
                 "Artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->

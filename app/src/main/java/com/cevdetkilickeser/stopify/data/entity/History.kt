@@ -12,7 +12,7 @@ data class History(
     @ColumnInfo(name = "trackTitle") val trackTitle: String? = null,
     @ColumnInfo(name = "trackImage") val trackImage: String? = null,
     @ColumnInfo(name = "trackArtistName") val trackArtistName: String? = null,
-    @ColumnInfo(name = "trackLink") val trackLink: String? = null,
+    @ColumnInfo(name = "trackPreview") val trackPreview: String? = null,
     @ColumnInfo(name = "artistId") val artistId: String? = null,
     @ColumnInfo(name = "artistName") val artistName: String? = null,
     @ColumnInfo(name = "artistImage") val artistImage: String? = null,
