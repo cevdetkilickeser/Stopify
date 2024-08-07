@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.data.album
+package com.cevdetkilickeser.stopify.data.model.album
 
 
 import com.google.gson.annotations.SerializedName

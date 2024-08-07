@@ -1,15 +1,15 @@
-package com.cevdetkilickeser.stopify.data.album
+package com.cevdetkilickeser.stopify.data.model.album
 
 
 import com.google.gson.annotations.SerializedName
 
-data class GenreData(
+data class TrackDataArtist(
     @SerializedName("id")
-    val id: Int,
+    val id: String,
     @SerializedName("name")
     val name: String,
-    @SerializedName("picture")
-    val picture: String,
+    @SerializedName("tracklist")
+    val trackList: String,
     @SerializedName("type")
     val type: String
 )

@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.data.playlist
+package com.cevdetkilickeser.stopify.data.model.playlist
 
 
 import com.google.gson.annotations.SerializedName

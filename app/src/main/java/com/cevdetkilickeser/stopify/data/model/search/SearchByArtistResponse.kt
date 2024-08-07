@@ -1,11 +1,11 @@
-package com.cevdetkilickeser.stopify.data.search
+package com.cevdetkilickeser.stopify.data.model.search
 
 
 import com.google.gson.annotations.SerializedName
 
-data class SearchByAlbumResponse(
+data class SearchByArtistResponse(
     @SerializedName("data")
-    val albumDataList: List<AlbumData>,
+    val artistDataList: List<ArtistData>,
     @SerializedName("total")
     val total: Int,
     @SerializedName("next")

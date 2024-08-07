@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.data.single_genre
+package com.cevdetkilickeser.stopify.data.model.single_genre
 
 
 import com.google.gson.annotations.SerializedName
