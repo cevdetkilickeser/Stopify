@@ -4,14 +4,16 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.data.entity.Like
 
-@Database(entities = [History::class, Like::class], version = 1, exportSchema = false)
-abstract class AppDatabase: RoomDatabase() {
+@Database(entities = [History::class, Like::class, Download::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getHistoryDao(): HistoryDao
     abstract fun getLikeDao(): LikeDao
+    abstract fun getDownloadDao(): DownloadDao
 
     companion object {
         @Volatile

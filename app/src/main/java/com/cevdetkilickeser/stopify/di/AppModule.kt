@@ -1,12 +1,14 @@
 package com.cevdetkilickeser.stopify.di
 
 import android.content.Context
+import com.cevdetkilickeser.stopify.repo.DownloadRepository
 import com.cevdetkilickeser.stopify.repo.HistoryRepository
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 import com.cevdetkilickeser.stopify.retrofit.ApiUtils
 import com.cevdetkilickeser.stopify.room.AppDatabase
+import com.cevdetkilickeser.stopify.room.DownloadDao
 import com.cevdetkilickeser.stopify.room.HistoryDao
 import com.cevdetkilickeser.stopify.room.LikeDao
 import com.google.firebase.auth.FirebaseAuth
@@ -41,6 +43,12 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun provideDownloadRepository(downloadDao: DownloadDao): DownloadRepository {
+        return DownloadRepository(downloadDao)
+    }
+
+    @Provides
+    @Singleton
     fun provideApiService(): ApiService {
         return ApiUtils.getApiService()
     }
@@ -55,6 +63,12 @@ class AppModule {
     @Singleton
     fun provideLikeDao(@ApplicationContext context: Context): LikeDao {
         return AppDatabase.getDatabase(context).getLikeDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDownloadDao(@ApplicationContext context: Context): DownloadDao {
+        return AppDatabase.getDatabase(context).getDownloadDao()
     }
 
     @Provides
