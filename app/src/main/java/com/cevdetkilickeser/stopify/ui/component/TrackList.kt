@@ -40,14 +40,16 @@ fun TrackList(
 ) {
     LazyColumn {
         items(trackList) { track ->
-            val isLike = likeList.any { it.trackId == track.id }
-            TrackItem(
-                isSearch = isSearch,
-                track = track,
-                onTrackClick = onTrackClick,
-                isLike = isLike,
-                onLikeClick = onLikeClick
-            )
+            if (track.preview.isNotEmpty()){
+                val isLike = likeList.any { it.trackId == track.id }
+                TrackItem(
+                    isSearch = isSearch,
+                    track = track,
+                    onTrackClick = onTrackClick,
+                    isLike = isLike,
+                    onLikeClick = onLikeClick
+                )
+            }
         }
     }
 }

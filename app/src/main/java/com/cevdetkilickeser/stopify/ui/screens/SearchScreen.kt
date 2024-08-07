@@ -1,5 +1,7 @@
 package com.cevdetkilickeser.stopify.ui.screens
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,11 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,6 +28,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -33,6 +40,7 @@ import com.cevdetkilickeser.stopify.ui.component.HistoryAlbumList
 import com.cevdetkilickeser.stopify.ui.component.HistoryArtistList
 import com.cevdetkilickeser.stopify.ui.component.HistoryTrackList
 import com.cevdetkilickeser.stopify.ui.component.TrackList
+import com.cevdetkilickeser.stopify.urlToString
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -48,7 +56,9 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
         viewModel.getHistory(selectedFilter)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(color = Color.White)) {
         val searchResults by viewModel.trackListState.collectAsState()
         val searchByArtistResults by viewModel.artistListState.collectAsState()
         val searchByAlbumResults by viewModel.albumListState.collectAsState()
@@ -66,9 +76,20 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 label = { Text("Search") },
+                colors = TextFieldDefaults.colors(
+                    cursorColor = Color.Black,
+                    focusedContainerColor = Color.LightGray,
+                    unfocusedContainerColor = Color.LightGray,
+                    unfocusedLabelColor = Color.Black,
+                    focusedLabelColor = Color.Black,
+                    focusedIndicatorColor = Color.Transparent,
+                    focusedSuffixColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)
+                    .clip(shape = RoundedCornerShape(20.dp))
             )
             QueryFilter(
                 selectedFilter = selectedFilter,
@@ -86,7 +107,12 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                 "Track" -> HistoryTrackList(
                     historyList = historyTrackList,
                     onHistoryClick = { history ->
-                    navController.navigate("player/${history.trackPreview}")
+                        val preview = history.trackPreview?.urlToString()
+                        val title = history.trackTitle?.urlToString()?.replace("+", "%20")
+                        val image = history.trackImage?.urlToString()
+                        val artistName = history.trackArtistName?.urlToString()?.replace("+", "%20")
+                        Log.e("Fatal","$preview  $title  $image  $artistName")
+                        navController.navigate("player/$preview/$title/$image/$artistName")
                 },
                     onDeleteHistoryClick = { history ->
                         viewModel.deleteHistory(history,selectedFilter)
@@ -120,11 +146,15 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                                 trackTitle = track.title,
                                 trackImage = track.album.cover,
                                 trackArtistName = track.artist.name,
-                                trackPreview = track.link
+                                trackPreview = track.preview
                             )
                         )
                     }
-                    navController.navigate("player/${track.preview}")
+                    val preview = track.preview.urlToString()
+                    val title = track.title.urlToString().replace("+", "%20")
+                    val image = track.album.cover.urlToString()
+                    val artistName = track.artist.name.urlToString().replace("+", "%20")
+                    navController.navigate("player/$preview/$title/$image/$artistName")
                 })
 
                 "Artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
@@ -175,10 +205,10 @@ fun QueryFilter(
     val coroutineScope = rememberCoroutineScope()
 
     Box {
-        Button(onClick = { expanded = true }, modifier = Modifier.width(90.dp)) {
+        Button(onClick = { expanded = true }, modifier = Modifier.width(90.dp), colors = ButtonDefaults.buttonColors(containerColor = Color.Black)) {
             Text(selectedFilter)
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(color = Color.LightGray)) {
             filterOptions.forEach { option ->
                 DropdownMenuItem(text = { Text(text = option) }, onClick = {
                     onFilterSelected(option)

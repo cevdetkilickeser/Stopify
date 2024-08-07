@@ -1,5 +1,7 @@
 package com.cevdetkilickeser.stopify.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,16 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -28,12 +24,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 
 @Composable
-fun MusicPlayerScreen(preview: String,
+fun MusicPlayerScreen(preview: String, title: String, image: String, artistName: String,
     viewModel: VMMusicPlayer = hiltViewModel()
 ) {
     val isPlaying by viewModel.isPlaying.collectAsState()
@@ -45,23 +45,44 @@ fun MusicPlayerScreen(preview: String,
 
     LaunchedEffect(key1 = preview) {
         viewModel.load(preview)
+        viewModel.play()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(color = Color.White),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Image(painter = rememberAsyncImagePainter(image) ?: painterResource(id = R.drawable.ic_stopify), contentDescription = "Track Image", modifier = Modifier.size(200.dp))
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = title ?: "Title",
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = artistName ?: "Artist Name",
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+        )
+
         Slider(
             value = sliderPosition,
             onValueChange = { newValue ->
-                viewModel.pause()
                 viewModel.seekTo(newValue.toLong() * 1000)
-            },
-            onValueChangeFinished = {
-                viewModel.play()
             },
             valueRange = 0f..sliderDuration,
             colors = SliderDefaults.colors(
@@ -69,12 +90,12 @@ fun MusicPlayerScreen(preview: String,
                 inactiveTrackColor = Color.Gray,
                 activeTrackColor = Color.Black
             ),
-            modifier = Modifier.padding(horizontal = 15.dp)
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 15.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween) {
             Text(text = formatTime(currentPosition))
             Text(text = formatTime(duration))
@@ -83,29 +104,34 @@ fun MusicPlayerScreen(preview: String,
         Spacer(modifier = Modifier.height(50.dp))
 
         Row(
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
         ) {
             IconButton(onClick = { /* TODO: Previous song */ }) {
-                Icon(Icons.Default.Home, contentDescription = "Previous")
+                Icon(painter = painterResource(id = R.drawable.ic_skip_previous), contentDescription = "Previous",
+                    modifier = Modifier.size(100.dp))
             }
             IconButton(onClick = { viewModel.rewind() }) {
-                Icon(Icons.Default.Search, contentDescription = "Rewind 5s")
+                Icon(painter = painterResource(id = R.drawable.ic_backward_10), contentDescription = "Rewind 10s")
             }
             IconButton(onClick = { if (isPlaying) viewModel.pause() else viewModel.play() }) {
-                Icon(if (isPlaying) Icons.Default.Lock else Icons.Default.PlayArrow, contentDescription = "Play/Pause")
+                Icon(
+                    painter = if (isPlaying) painterResource(id = R.drawable.ic_pause) else painterResource(id = R.drawable.ic_play),
+                    contentDescription = "Play/Pause",
+                    modifier = Modifier.size(100.dp))
             }
             IconButton(onClick = { viewModel.fastForward() }) {
-                Icon(Icons.Default.Favorite, contentDescription = "Forward 5s")
+                Icon(painter = painterResource(id = R.drawable.ic_forward_10), contentDescription = "Forward 10s")
             }
             IconButton(onClick = { /* TODO: Next song */ }) {
-                Icon(Icons.Default.Build, contentDescription = "Next")
+                Icon(painter = painterResource(id = R.drawable.ic_skip_next), contentDescription = "Next",
+                    modifier = Modifier.size(100.dp))
             }
         }
 
-        IconButton(onClick = { viewModel.downloadSong(preview) }) {
-            Icon(Icons.Default.Add, contentDescription = "Download")
-        }
+//        IconButton(onClick = { viewModel.downloadSong(preview, title, image, artistName) }) {
+//            Icon(Icons.Default.Add, contentDescription = "Download")
+//        }
     }
 }
 

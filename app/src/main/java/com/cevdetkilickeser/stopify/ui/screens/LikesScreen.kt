@@ -25,34 +25,44 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.urlToString
 import com.cevdetkilickeser.stopify.viewmodel.VMLikes
 
 @Composable
-fun LikesScreen(navController: NavController, userId: String, viewModel: VMLikes = hiltViewModel()) {
-    val likes by viewModel.likeListState.collectAsState()
+fun LikesScreen(
+    navController: NavController,
+    userId: String,
+    viewModel: VMLikes = hiltViewModel()
+) {
+    val likeList by viewModel.likeListState.collectAsState()
 
     LaunchedEffect(userId) {
         viewModel.getLikes(userId)
     }
 
-    LikeList(likes = likes, onLikeClick = { like ->
-        navController.navigate("player/${like.trackPreview}")
+    LikeList(likeList = likeList, onLikeClick = { like ->
+        val preview = like.trackPreview.urlToString()
+        val title = like.trackTitle.urlToString().replace("+", "%20")
+        val image = like.trackImage.urlToString()
+        val artistName = like.trackArtistName.urlToString().replace("+", "%20")
+        navController.navigate("player/$preview/$title/$image/$artistName")
     },
         onDeleteLikeClick = { like ->
             viewModel.deleteLike(like)
-        })
-
+        }
+    )
 }
 
 @Composable
-fun LikeList(likes: List<Like>, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) -> Unit) {
+fun LikeList(likeList: List<Like>, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) -> Unit) {
     LazyColumn {
-        items(likes) { like ->
+        items(likeList) { like ->
             LikeItem(like = like, onLikeClick = onLikeClick, onDeleteLikeClick)
         }
     }
@@ -82,7 +92,11 @@ fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) 
                 Text(
                     text = like.trackTitle,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .width(200.dp)
                 )
                 Text(
                     text = like.trackArtistName,

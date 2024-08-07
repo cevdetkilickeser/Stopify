@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,29 +17,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.cevdetkilickeser.stopify.data.playlist.Track
-import com.cevdetkilickeser.stopify.ui.album.AlbumScreen
-import com.cevdetkilickeser.stopify.ui.artist.ArtistScreen
-import com.cevdetkilickeser.stopify.ui.home.HomeScreen
-import com.cevdetkilickeser.stopify.ui.likes.LikesScreen
-import com.cevdetkilickeser.stopify.ui.login.LoginScreen
-import com.cevdetkilickeser.stopify.ui.player.MusicPlayerScreen
-import com.cevdetkilickeser.stopify.ui.playlist.PlaylistScreen
-import com.cevdetkilickeser.stopify.ui.search.SearchScreen
-import com.cevdetkilickeser.stopify.ui.signup.SignupScreen
-import com.cevdetkilickeser.stopify.ui.single_genre.SingleGenreScreen
-import com.google.firebase.auth.FirebaseAuth
-import com.google.gson.Gson
+import com.cevdetkilickeser.stopify.ui.screens.AlbumScreen
+import com.cevdetkilickeser.stopify.ui.screens.ArtistScreen
+import com.cevdetkilickeser.stopify.ui.screens.HomeScreen
+import com.cevdetkilickeser.stopify.ui.screens.LikesScreen
+import com.cevdetkilickeser.stopify.ui.screens.LoginScreen
+import com.cevdetkilickeser.stopify.ui.screens.MusicPlayerScreen
+import com.cevdetkilickeser.stopify.ui.screens.PlaylistScreen
+import com.cevdetkilickeser.stopify.ui.screens.SearchScreen
+import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
+import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
+import com.cevdetkilickeser.stopify.ui.screens.SplashScreen
 
 @Composable
-fun MainScreen() {
-    val userId: String = FirebaseAuth.getInstance().currentUser!!.toString()
+fun MainScreen(userId: String) {
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStackEntry?.destination?.route
@@ -46,17 +45,20 @@ fun MainScreen() {
 
     LaunchedEffect(currentDestination) {
         bottomAppBarVisible.value =
-            !(currentDestination == "splash" || currentDestination == "login" || currentDestination == "signup")
+            !(currentDestination == "splash" || currentDestination == "login" || currentDestination == "signup" || currentDestination == "player")
     }
 
     Scaffold(
         bottomBar = {
             if (bottomAppBarVisible.value) {
-                NavigationBar {
+                NavigationBar(containerColor = Color.White) {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                         label = { Text("Home") },
                         selected = currentDestination == "home",
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.LightGray
+                        ),
                         onClick = {
                             navController.navigate("home") {
                                 popUpTo(navController.graph.startDestinationId) {
@@ -71,6 +73,9 @@ fun MainScreen() {
                         icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                         label = { Text("Search") },
                         selected = currentDestination == "search",
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.LightGray
+                        ),
                         onClick = {
                             navController.navigate("search") {
                                 popUpTo(navController.graph.startDestinationId) {
@@ -85,6 +90,9 @@ fun MainScreen() {
                         icon = { Icon(Icons.Default.Favorite, contentDescription = "Likes") },
                         label = { Text("Likes") },
                         selected = currentDestination == "likes",
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.LightGray
+                        ),
                         onClick = {
                             navController.navigate("likes") {
                                 popUpTo(navController.graph.startDestinationId) {
@@ -152,17 +160,22 @@ fun MainScreen() {
                 ) { navBackStackEntry ->
                     val albumId =
                         navBackStackEntry.arguments?.getString("albumId") ?: return@composable
-                    AlbumScreen(navController = navController, albumId = albumId)
+                    AlbumScreen(navController = navController, albumId = albumId, userId = userId)
                 }
                 composable(
-                    "player/{trackJson}",
-                    arguments = listOf(navArgument("trackJson") { type = NavType.StringType })
+                    "player/{preview}/{title}/{image}/{artistName}",
+                    arguments = listOf(
+                        navArgument("preview") { type = NavType.StringType },
+                        navArgument("title") { type = NavType.StringType },
+                        navArgument("image") { type = NavType.StringType },
+                        navArgument("artistName") { type = NavType.StringType }
+                    )
                 ) { navBackStackEntry ->
-                    val trackJson =
-                        navBackStackEntry.arguments?.getString("trackJson") ?: return@composable
-                    val gson = Gson()
-                    val track = gson.fromJson(trackJson, Track::class.java)
-                    MusicPlayerScreen(track)
+                    val preview = navBackStackEntry.arguments?.getString("preview") ?: return@composable
+                    val title = navBackStackEntry.arguments?.getString("title") ?: return@composable
+                    val image = navBackStackEntry.arguments?.getString("image") ?: return@composable
+                    val artistName = navBackStackEntry.arguments?.getString("artistName") ?: return@composable
+                    MusicPlayerScreen(preview = preview, title = title, image = image, artistName = artistName)
                 }
             }
         }

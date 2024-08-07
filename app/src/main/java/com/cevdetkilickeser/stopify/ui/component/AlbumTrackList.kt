@@ -41,13 +41,15 @@ fun AlbumTrackList(
     LazyColumn {
         items(trackList) { track ->
             val isLike = likeList.any { it.trackId == track.id }
-            AlbumTrackItem(
-                isSearch = isSearch,
-                track = track,
-                onTrackClick = onTrackClick,
-                isLike = isLike,
-                onLikeClick = onLikeClick
-            )
+            if (track.preview.isNotEmpty()){
+                AlbumTrackItem(
+                    isSearch = isSearch,
+                    track = track,
+                    onTrackClick = onTrackClick,
+                    isLike = isLike,
+                    onLikeClick = onLikeClick
+                )
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.ui.component.TrackList
+import com.cevdetkilickeser.stopify.urlToString
 import com.cevdetkilickeser.stopify.viewmodel.VMPlaylist
 
 @Composable
@@ -26,7 +27,11 @@ fun PlaylistScreen(navController: NavController, playlistId: String, userId: Str
         trackList = trackList,
         likeList = likeList,
         onTrackClick = { track ->
-            navController.navigate("player/${track.preview}")
+            val preview = track.preview.urlToString()
+            val title = track.title.urlToString().replace("+", "%20")
+            val image = track.album.cover.urlToString()
+            val artistName = track.artist.name.urlToString().replace("+", "%20")
+            navController.navigate("player/$preview/$title/$image/$artistName")
         },
         onLikeClick = { track, isLike ->
         if (isLike){

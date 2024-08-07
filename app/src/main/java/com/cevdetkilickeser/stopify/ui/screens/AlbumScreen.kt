@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.ui.component.AlbumTrackList
+import com.cevdetkilickeser.stopify.urlToString
 import com.cevdetkilickeser.stopify.viewmodel.VMAlbum
 
 @Composable
@@ -43,7 +44,6 @@ fun AlbumScreen(
             contentDescription = "Album Image",
             modifier = Modifier
                 .size(200.dp)
-                .fillMaxWidth(1f)
         )
         Spacer(modifier = Modifier.height(24.dp))
         album?.let {
@@ -52,7 +52,11 @@ fun AlbumScreen(
                 trackList = album!!.tracks.trackDataList,
                 likeList = likeList,
                 onTrackClick = { track ->
-                    navController.navigate("player/${track.preview}")
+                    val preview = track.preview.urlToString()
+                    val title = track.title.urlToString().replace("+", "%20")
+                    val image = track.trackDataAlbum.cover.urlToString()
+                    val artistName = track.trackDataArtist.name.urlToString().replace("+", "%20")
+                    navController.navigate("player/$preview/$title/$image/$artistName")
                 },
                 onLikeClick = { track, isLike ->
                     if (isLike) {
