@@ -1,6 +1,12 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
 import android.app.Application
+import android.app.DownloadManager
+import android.app.DownloadManager.Request
+import android.content.Context
+import android.database.Cursor
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -8,6 +14,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.cevdetkilickeser.stopify.data.entity.Download
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.repo.DownloadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -21,12 +29,14 @@ import javax.inject.Inject
 class VMMusicPlayer @Inject constructor(application: Application, private val downloadRepository: DownloadRepository, private val savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
 
-    //private val context by lazy { application.applicationContext }
+    private val context = application.applicationContext
+    private val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
     private val _player: ExoPlayer = ExoPlayer.Builder(application)
         .setSeekForwardIncrementMs(10000L)
         .setSeekBackIncrementMs(10000L)
         .build()
+
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
@@ -35,6 +45,11 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
 
     private val _duration = MutableStateFlow(0L)
     val duration: StateFlow<Long> = _duration
+
+    private val _downloadListState = MutableStateFlow<List<Download>>(emptyList())
+
+    private val _isDownloadState = MutableStateFlow(false)
+    val isDownloadState: StateFlow<Boolean> =  _isDownloadState
 
     init {
         val savedPosition = savedStateHandle.get<Long>("currentPosition") ?: 0L
@@ -114,29 +129,45 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         savedStateHandle["currentPosition"] = _currentPosition.value
         _player.release()
     }
-}
 
-//    fun downloadSong(previewUrl: String, title: String, image: String, artistName: String) {
-//        viewModelScope.launch {
-//            try {
-//                val fileName = "${title.replace(" ", "_")}.mp3"
-//                val file = File(context.filesDir, fileName)
-//
-//                val urlConnection = URL(previewUrl).openConnection() as HttpURLConnection
-//                urlConnection.inputStream.use { input ->
-//                    FileOutputStream(file).use { output ->
-//                        input.copyTo(output)
-//                    }
-//                }
-//
-//                val download = Download(0, previewUrl, title, image, artistName)
-//                downloadRepository.insertDownload(download)
-//
-//                Toast.makeText(context, "Download Successfully", Toast.LENGTH_SHORT).show()
-//
-//            } catch (e: Exception) {
-//
-//                Toast.makeText(context, "An Error Occur, Try Again", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
+    fun getDownloads(preview: String) {
+        viewModelScope.launch {
+            _downloadListState.value = downloadRepository.getDownloads()
+            _isDownloadState.value = _downloadListState.value.any {it.trackPreview == preview}
+        }
+    }
+
+    fun downloadSong(playerTrack: PlayerTrack) {
+        viewModelScope.launch {
+            try {
+                val request = Request(Uri.parse(playerTrack.trackPreview))
+                    .setTitle("${playerTrack.trackTitle.replace(" ", "_")}.mp3")
+                    .setNotificationVisibility(Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setAllowedOverMetered(true)
+
+                val downloadId = downloadManager.enqueue(request)
+                val fileUri: String? = getDownloadedFileUri(downloadManager,downloadId)
+                val download = Download(0, fileUri, playerTrack.trackId, playerTrack.trackPreview, playerTrack.trackTitle, playerTrack.trackImage, playerTrack.trackArtistName)
+                downloadRepository.insertDownload(download)
+                getDownloads(playerTrack.trackPreview)
+            } catch (e: Exception) {
+                Log.e("şşş","Hata")
+            }
+        }
+    }
+
+    private fun getDownloadedFileUri(downloadManager: DownloadManager, downloadId: Long): String? {
+        val query = DownloadManager.Query().setFilterById(downloadId)
+        val cursor: Cursor = downloadManager.query(query)
+
+        if (cursor.moveToFirst()) {
+            val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
+            val uriString = cursor.getString(columnIndex)
+            if (uriString != null) {
+                return uriString
+            }
+        }
+        cursor.close()
+        return null
+    }
+}
