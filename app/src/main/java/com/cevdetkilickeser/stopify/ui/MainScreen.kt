@@ -1,29 +1,48 @@
 package com.cevdetkilickeser.stopify.ui
 
+import android.app.Activity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cevdetkilickeser.stopify.R
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.screens.AlbumScreen
 import com.cevdetkilickeser.stopify.ui.screens.ArtistScreen
 import com.cevdetkilickeser.stopify.ui.screens.HomeScreen
@@ -31,10 +50,12 @@ import com.cevdetkilickeser.stopify.ui.screens.LikesScreen
 import com.cevdetkilickeser.stopify.ui.screens.LoginScreen
 import com.cevdetkilickeser.stopify.ui.screens.MusicPlayerScreen
 import com.cevdetkilickeser.stopify.ui.screens.PlaylistScreen
+import com.cevdetkilickeser.stopify.ui.screens.ProfileScreen
 import com.cevdetkilickeser.stopify.ui.screens.SearchScreen
 import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
 import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
-import com.cevdetkilickeser.stopify.ui.screens.SplashScreen
+import com.google.firebase.auth.FirebaseAuth
+import com.google.gson.Gson
 
 @Composable
 fun MainScreen() {
@@ -45,72 +66,55 @@ fun MainScreen() {
     val context = LocalContext.current as? Activity
 
     Scaffold(
+        topBar = {
+            MyTopAppBar(
+                currentDestination = currentDestination,
+                onBackClick = { if (currentDestination == "home") {context?.finish()} else {navController.popBackStack()} },
+                onProfileClick = { navController.navigate("profile") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }}
+            )
+    },
         bottomBar = {
-            if (bottomAppBarVisible.value) {
-                NavigationBar(containerColor = Color.White) {
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                        label = { Text("Home") },
-                        selected = currentDestination == "home",
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = Color.LightGray
-                        ),
-                        onClick = {
-                            navController.navigate("home") {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+            MyBottomBar(
+                currentDestination = currentDestination,
+                onHomeClick = {
+                    navController.navigate("home") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                } },
+                onSearchClick = {
+                    navController.navigate("search") {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
                         }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                        label = { Text("Search") },
-                        selected = currentDestination == "search",
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = Color.LightGray
-                        ),
-                        onClick = {
-                            navController.navigate("search") {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                onLikesClick = {
+                    navController.navigate("likes") {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
                         }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Favorite, contentDescription = "Likes") },
-                        label = { Text("Likes") },
-                        selected = currentDestination == "likes",
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = Color.LightGray
-                        ),
-                        onClick = {
-                            navController.navigate("likes") {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
-                    )
-                }
-            }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                })
         },
         content = { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = "splash",
+                startDestination = if (userId == "Guest User"){"login"} else{"home"},
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable("splash") {
-                    SplashScreen(navController)
-                }
                 composable("login") {
                     LoginScreen(navController)
                 }
@@ -125,6 +129,9 @@ fun MainScreen() {
                 }
                 composable("likes") {
                     LikesScreen(navController, userId)
+                }
+                composable("profile") {
+                    ProfileScreen(navController)
                 }
                 composable(
                     "single_genre/{genreId}",
@@ -173,4 +180,96 @@ fun MainScreen() {
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyTopAppBar(currentDestination: String?, onBackClick: () -> Unit, onProfileClick: () -> Unit) {
+    val topAppBarVisible = remember { mutableStateOf(false) }
+    val routes = arrayOf("splash","login","signup","player")
+    topAppBarVisible.value =
+        if (currentDestination == null) { false } else { !(routes.any { route -> currentDestination.contains(route) }) }
+
+    if (topAppBarVisible.value) {
+        TopAppBar(
+            title = {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.app_name),
+                        fontSize = 20.sp,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                    )
+                }
+            },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_back_arrow),
+                        contentDescription = "Back",
+                        tint = Color.Black
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = onProfileClick) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile",
+                        tint = Color.Black,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.White
+            )
+        )
+    }
+}
+
+@Composable
+fun MyBottomBar(currentDestination: String?, onHomeClick: () -> Unit, onSearchClick: () -> Unit, onLikesClick: () -> Unit) {
+    val bottomAppBarVisible = remember { mutableStateOf(false) }
+    val routes = arrayOf("splash","login","signup","player")
+    bottomAppBarVisible.value =
+        if (currentDestination == null) { false } else { !(routes.any { route -> currentDestination.contains(route) }) }
+
+    if (bottomAppBarVisible.value){
+        NavigationBar(containerColor = Color.White) {
+            NavigationBarItem(
+                icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                label = { Text("Home") },
+                selected = currentDestination == "home",
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.LightGray
+                ),
+                onClick = { onHomeClick() }
+            )
+            NavigationBarItem(
+                icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                label = { Text("Search") },
+                selected = currentDestination == "search",
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.LightGray
+                ),
+                onClick = { onSearchClick() }
+            )
+            NavigationBarItem(
+                icon = { Icon(Icons.Default.Favorite, contentDescription = "Likes") },
+                label = { Text("Likes") },
+                selected = currentDestination == "likes",
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.LightGray
+                ),
+                onClick = { onLikesClick () }
+            )
+        }
+    }
 }
