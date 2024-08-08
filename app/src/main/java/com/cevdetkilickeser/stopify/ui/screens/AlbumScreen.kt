@@ -1,6 +1,7 @@
 package com.cevdetkilickeser.stopify.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,14 +13,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.AlbumTrackList
 import com.cevdetkilickeser.stopify.urlToString
 import com.cevdetkilickeser.stopify.viewmodel.VMAlbum
+import com.google.gson.Gson
 
 @Composable
 fun AlbumScreen(
@@ -37,7 +41,7 @@ fun AlbumScreen(
         viewModel.getLikes(userId)
     }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
 
         Image(
             painter = rememberAsyncImagePainter(album?.cover),
@@ -52,11 +56,15 @@ fun AlbumScreen(
                 trackList = album!!.tracks.trackDataList,
                 likeList = likeList,
                 onTrackClick = { track ->
-                    val preview = track.preview.urlToString()
-                    val title = track.title.urlToString().replace("+", "%20")
-                    val image = track.trackDataAlbum.cover.urlToString()
-                    val artistName = track.trackDataArtist.name.urlToString().replace("+", "%20")
-                    navController.navigate("player/$preview/$title/$image/$artistName")
+                    val playerTrack = PlayerTrack(
+                        track.id.urlToString(),
+                        track.title.urlToString().replace("+"," "),
+                        track.preview.urlToString(),
+                        track.trackDataAlbum.cover.urlToString(),
+                        track.trackDataArtist.name.urlToString().replace("+"," ")
+                    )
+                    val playerTrackGson = Gson().toJson(playerTrack)
+                    navController.navigate("player/$playerTrackGson")
                 },
                 onLikeClick = { track, isLike ->
                     if (isLike) {

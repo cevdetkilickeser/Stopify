@@ -1,6 +1,5 @@
 package com.cevdetkilickeser.stopify.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.data.entity.History
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.AlbumList
 import com.cevdetkilickeser.stopify.ui.component.ArtistList
 import com.cevdetkilickeser.stopify.ui.component.HistoryAlbumList
@@ -42,6 +43,7 @@ import com.cevdetkilickeser.stopify.ui.component.HistoryTrackList
 import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.urlToString
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -84,7 +86,8 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                     focusedLabelColor = Color.Black,
                     focusedIndicatorColor = Color.Transparent,
                     focusedSuffixColor = Color.Black,
-                    unfocusedIndicatorColor = Color.Transparent
+                    unfocusedIndicatorColor = Color.Transparent,
+                    selectionColors = TextSelectionColors(Color.Black, Color.Gray)
                 ),
                 modifier = Modifier
                     .weight(1f)
@@ -107,12 +110,15 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                 "Track" -> HistoryTrackList(
                     historyList = historyTrackList,
                     onHistoryClick = { history ->
-                        val preview = history.trackPreview?.urlToString()
-                        val title = history.trackTitle?.urlToString()?.replace("+", "%20")
-                        val image = history.trackImage?.urlToString()
-                        val artistName = history.trackArtistName?.urlToString()?.replace("+", "%20")
-                        Log.e("Fatal","$preview  $title  $image  $artistName")
-                        navController.navigate("player/$preview/$title/$image/$artistName")
+                        val playerTrack = PlayerTrack(
+                            history.trackId!!.urlToString(),
+                            history.trackTitle!!.urlToString().replace("+", " "),
+                            history.trackPreview!!.urlToString(),
+                            history.trackImage!!.urlToString(),
+                            history.trackArtistName!!.urlToString().replace("+", " ")
+                        )
+                        val playerTrackGson = Gson().toJson(playerTrack)
+                        navController.navigate("player/$playerTrackGson")
                 },
                     onDeleteHistoryClick = { history ->
                         viewModel.deleteHistory(history,selectedFilter)
@@ -150,11 +156,15 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                             )
                         )
                     }
-                    val preview = track.preview.urlToString()
-                    val title = track.title.urlToString().replace("+", "%20")
-                    val image = track.album.cover.urlToString()
-                    val artistName = track.artist.name.urlToString().replace("+", "%20")
-                    navController.navigate("player/$preview/$title/$image/$artistName")
+                    val playerTrack = PlayerTrack(
+                        track.id.urlToString(),
+                        track.title.urlToString().replace("+"," "),
+                        track.preview.urlToString(),
+                        track.album.cover.urlToString(),
+                        track.artist.name.urlToString().replace("+"," ")
+                    )
+                    val playerTrackGson = Gson().toJson(playerTrack)
+                    navController.navigate("player/$playerTrackGson")
                 })
 
                 "Artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
