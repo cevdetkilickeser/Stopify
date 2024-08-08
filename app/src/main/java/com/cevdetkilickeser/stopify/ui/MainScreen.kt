@@ -37,16 +37,12 @@ import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
 import com.cevdetkilickeser.stopify.ui.screens.SplashScreen
 
 @Composable
-fun MainScreen(userId: String) {
+fun MainScreen() {
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStackEntry?.destination?.route
-    val bottomAppBarVisible = remember { mutableStateOf(false) }
-
-    LaunchedEffect(currentDestination) {
-        bottomAppBarVisible.value =
-            !(currentDestination == "splash" || currentDestination == "login" || currentDestination == "signup" || currentDestination == "player")
-    }
+    val userId = FirebaseAuth.getInstance().currentUser?.email.toString()
+    val context = LocalContext.current as? Activity
 
     Scaffold(
         bottomBar = {
