@@ -22,13 +22,6 @@ class VMLikes @Inject constructor(private val likeRepository: LikeRepository) : 
         }
     }
 
-    fun insertLike(like: Like) {
-        viewModelScope.launch {
-            likeRepository.insertLike(like)
-            getLikes(like.userId)
-        }
-    }
-
     fun deleteLike(like: Like) {
         viewModelScope.launch {
             likeRepository.deleteLike(like)
