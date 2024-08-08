@@ -163,19 +163,16 @@ fun MainScreen(userId: String) {
                     AlbumScreen(navController = navController, albumId = albumId, userId = userId)
                 }
                 composable(
-                    "player/{preview}/{title}/{image}/{artistName}",
+                    "player/{player_track}",
                     arguments = listOf(
-                        navArgument("preview") { type = NavType.StringType },
-                        navArgument("title") { type = NavType.StringType },
-                        navArgument("image") { type = NavType.StringType },
-                        navArgument("artistName") { type = NavType.StringType }
-                    )
+                        navArgument("player_track") { type = NavType.StringType })
                 ) { navBackStackEntry ->
-                    val preview = navBackStackEntry.arguments?.getString("preview") ?: return@composable
-                    val title = navBackStackEntry.arguments?.getString("title") ?: return@composable
-                    val image = navBackStackEntry.arguments?.getString("image") ?: return@composable
-                    val artistName = navBackStackEntry.arguments?.getString("artistName") ?: return@composable
-                    MusicPlayerScreen(preview = preview, title = title, image = image, artistName = artistName)
+                    val playerTrackGson =
+                        navBackStackEntry.arguments?.getString("player_track") ?: return@composable
+                    val playerTrack = Gson().fromJson(playerTrackGson, PlayerTrack::class.java)
+                    MusicPlayerScreen(
+                        playerTrack = playerTrack
+                    )
                 }
             }
         }
