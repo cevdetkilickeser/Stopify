@@ -1,5 +1,7 @@
 package com.cevdetkilickeser.stopify.ui.screens
 
+import android.annotation.SuppressLint
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,23 +33,28 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.UnstableApi
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 
+@OptIn(UnstableApi::class)
 @Composable
-fun MusicPlayerScreen(preview: String, title: String, image: String, artistName: String,
-    viewModel: VMMusicPlayer = hiltViewModel()
+fun MusicPlayerScreen(playerTrack: PlayerTrack,
+                      viewModel: VMMusicPlayer = hiltViewModel()
 ) {
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPosition by viewModel.currentPosition.collectAsState()
     val duration by viewModel.duration.collectAsState()
+    val isDownload by viewModel.isDownloadState.collectAsState()
 
     val sliderPosition = (currentPosition / 1000).toFloat()
     val sliderDuration = (duration / 1000).toFloat()
 
-    LaunchedEffect(key1 = preview) {
-        viewModel.load(preview)
+    LaunchedEffect(key1 = playerTrack) {
+        viewModel.getDownloads(playerTrack.trackPreview)
+        viewModel.load(playerTrack.trackPreview)
         viewModel.play()
     }
 
@@ -55,12 +65,12 @@ fun MusicPlayerScreen(preview: String, title: String, image: String, artistName:
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(painter = rememberAsyncImagePainter(image) ?: painterResource(id = R.drawable.ic_stopify), contentDescription = "Track Image", modifier = Modifier.size(200.dp))
+        Image(painter = rememberAsyncImagePainter(playerTrack.trackImage), contentDescription = "Track Image", modifier = Modifier.size(200.dp))
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = title ?: "Title",
+            text = playerTrack.trackTitle,
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -71,7 +81,7 @@ fun MusicPlayerScreen(preview: String, title: String, image: String, artistName:
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = artistName ?: "Artist Name",
+            text = playerTrack.trackArtistName,
             style = MaterialTheme.typography.labelLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -129,12 +139,13 @@ fun MusicPlayerScreen(preview: String, title: String, image: String, artistName:
             }
         }
 
-//        IconButton(onClick = { viewModel.downloadSong(preview, title, image, artistName) }) {
-//            Icon(Icons.Default.Add, contentDescription = "Download")
-//        }
+        IconButton(onClick = { viewModel.downloadSong(playerTrack) }) {
+            Icon(if (isDownload) Icons.Default.Done else Icons.Default.Add, contentDescription = "Download")
+        }
     }
 }
 
+@SuppressLint("DefaultLocale")
 fun formatTime(milliseconds: Long): String {
     val seconds = (milliseconds / 1000) % 60
     val minutes = (milliseconds / (1000 * 60)) % 60
