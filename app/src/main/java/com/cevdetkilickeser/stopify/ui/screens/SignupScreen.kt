@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -21,7 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.viewmodel.VMSignup
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +40,7 @@ fun SignupScreen(navController: NavController, viewModel: VMSignup = hiltViewMod
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val signupState by viewModel.signupState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val errorState by viewModel.errorState.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(signupState) {
@@ -107,9 +106,7 @@ fun SignupScreen(navController: NavController, viewModel: VMSignup = hiltViewMod
 
         Button(
             onClick = {
-                coroutineScope.launch {
-                    viewModel.signup(email.value, password.value)
-                }
+                viewModel.signup(email.value, password.value)
                 keyboardController?.hide()
             },
             enabled = email.value.isNotEmpty() && password.value.isNotEmpty(),
@@ -121,6 +118,16 @@ fun SignupScreen(navController: NavController, viewModel: VMSignup = hiltViewMod
             )
         ) {
             Text("Signup")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        errorState?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
