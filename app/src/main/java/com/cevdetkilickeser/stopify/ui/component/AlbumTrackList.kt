@@ -1,11 +1,13 @@
 package com.cevdetkilickeser.stopify.ui.component
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,7 +40,11 @@ fun AlbumTrackList(
     onTrackClick: (TrackData) -> Unit,
     onLikeClick: (TrackData, Boolean) -> Unit = { _, _ -> }
 ) {
-    LazyColumn {
+    LazyColumn(
+        modifier = Modifier
+            .background(color = Color.White)
+            .fillMaxSize()
+    ) {
         items(trackList) { track ->
             val isLike = likeList.any { it.trackId == track.id }
             if (track.preview.isNotEmpty()){

@@ -7,12 +7,19 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.urlToString
 import com.cevdetkilickeser.stopify.viewmodel.VMPlaylist
+import com.google.gson.Gson
 
 @Composable
-fun PlaylistScreen(navController: NavController, playlistId: String, userId: String, viewModel: VMPlaylist = hiltViewModel()) {
+fun PlaylistScreen(
+    navController: NavController,
+    playlistId: String,
+    userId: String,
+    viewModel: VMPlaylist = hiltViewModel()
+) {
 
     LaunchedEffect(key1 = playlistId, key2 = userId) {
         viewModel.getPlaylistDataList(playlistId)
@@ -27,18 +34,32 @@ fun PlaylistScreen(navController: NavController, playlistId: String, userId: Str
         trackList = trackList,
         likeList = likeList,
         onTrackClick = { track ->
-            val preview = track.preview.urlToString()
-            val title = track.title.urlToString().replace("+", "%20")
-            val image = track.album.cover.urlToString()
-            val artistName = track.artist.name.urlToString().replace("+", "%20")
-            navController.navigate("player/$preview/$title/$image/$artistName")
+            val playerTrack = PlayerTrack(
+                track.id.urlToString(),
+                track.title.urlToString().replace("+"," "),
+                track.preview.urlToString(),
+                track.album.cover.urlToString(),
+                track.artist.name.urlToString().replace("+"," ")
+            )
+            val playerTrackGson = Gson().toJson(playerTrack)
+            navController.navigate("player/$playerTrackGson")
         },
         onLikeClick = { track, isLike ->
-        if (isLike){
-            viewModel.deleteLikeByTrackId(userId, track.id)
-        } else {
-            viewModel.insertLike(Like(0,userId,track.id,track.title,track.artist.name,track.album.cover,track.preview))
-        }
-    })
+            if (isLike) {
+                viewModel.deleteLikeByTrackId(userId, track.id)
+            } else {
+                viewModel.insertLike(
+                    Like(
+                        0,
+                        userId,
+                        track.id,
+                        track.title,
+                        track.artist.name,
+                        track.album.cover,
+                        track.preview
+                    )
+                )
+            }
+        })
 }
 

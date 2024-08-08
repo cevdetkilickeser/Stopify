@@ -41,7 +41,7 @@ fun HomeScreen(navController: NavController, viewModel: VMHome = hiltViewModel()
 fun GenreGrid(genreDataList: List<GenreData>, navController: NavController) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(Color.White),
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
