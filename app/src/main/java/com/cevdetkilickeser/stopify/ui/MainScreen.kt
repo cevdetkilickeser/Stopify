@@ -24,9 +24,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,16 +37,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.ui.screens.AlbumScreen
 import com.cevdetkilickeser.stopify.ui.screens.ArtistScreen
+import com.cevdetkilickeser.stopify.ui.screens.DownloadsScreen
 import com.cevdetkilickeser.stopify.ui.screens.HomeScreen
 import com.cevdetkilickeser.stopify.ui.screens.LikesScreen
 import com.cevdetkilickeser.stopify.ui.screens.LoginScreen
@@ -58,38 +63,55 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 
 @Composable
-fun MainScreen() {
-    val navController = rememberNavController()
+fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor) {
+    val context = LocalContext.current
+    val activity = LocalContext.current as? Activity
+    var isConnected by remember { mutableStateOf(isInternetAvailable(context)) }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStackEntry?.destination?.route
-    val userId = FirebaseAuth.getInstance().currentUser?.email.toString()
-    val context = LocalContext.current as? Activity
+    val userId: String? = FirebaseAuth.getInstance().currentUser?.email
+
+    LaunchedEffect(Unit) {
+        networkMonitor.startNetworkCallback(
+            onNetworkAvailable = { isConnected = true },
+            onNetworkLost = { isConnected = false }
+        )
+    }
 
     Scaffold(
         topBar = {
             MyTopAppBar(
                 currentDestination = currentDestination,
-                onBackClick = { if (currentDestination == "home") {context?.finish()} else {navController.popBackStack()} },
-                onProfileClick = { navController.navigate("profile") {
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
+                onBackClick = {
+                    if (currentDestination == "home") {
+                        activity?.finish()
+                    } else {
+                        navController.popBackStack()
                     }
-                    launchSingleTop = true
-                    restoreState = true
-                }}
+                },
+                onProfileClick = {
+                    navController.navigate("profile") {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
-    },
+        },
         bottomBar = {
             MyBottomBar(
                 currentDestination = currentDestination,
                 onHomeClick = {
                     navController.navigate("home") {
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                    launchSingleTop = true
-                    restoreState = true
-                } },
+                },
                 onSearchClick = {
                     navController.navigate("search") {
                         popUpTo(navController.graph.startDestinationId) {
@@ -110,9 +132,14 @@ fun MainScreen() {
                 })
         },
         content = { innerPadding ->
+            println(userId)
             NavHost(
                 navController = navController,
-                startDestination = if (userId == "Guest User"){"login"} else{"home"},
+                startDestination = if (userId.isNullOrEmpty()) {
+                    "login"
+                } else {
+                    "home"
+                },
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable("login") {
@@ -125,10 +152,10 @@ fun MainScreen() {
                     HomeScreen(navController)
                 }
                 composable("search") {
-                    SearchScreen(navController, userId)
+                    SearchScreen(navController, userId!!)
                 }
                 composable("likes") {
-                    LikesScreen(navController, userId)
+                    LikesScreen(navController, userId!!)
                 }
                 composable("profile") {
                     ProfileScreen(navController)
@@ -147,7 +174,7 @@ fun MainScreen() {
                 ) { navBackStackEntry ->
                     val playlistId =
                         navBackStackEntry.arguments?.getString("playlistId") ?: return@composable
-                    PlaylistScreen(navController, playlistId, userId)
+                    PlaylistScreen(navController, playlistId, userId!!)
                 }
                 composable(
                     "artist/{artistId}",
@@ -163,7 +190,7 @@ fun MainScreen() {
                 ) { navBackStackEntry ->
                     val albumId =
                         navBackStackEntry.arguments?.getString("albumId") ?: return@composable
-                    AlbumScreen(navController = navController, albumId = albumId, userId = userId)
+                    AlbumScreen(navController = navController, albumId = albumId, userId = userId!!)
                 }
                 composable(
                     "player/{player_track}",
@@ -177,6 +204,9 @@ fun MainScreen() {
                         playerTrack = playerTrack
                     )
                 }
+                composable("downloads") {
+                    DownloadsScreen()
+                }
             }
         }
     )
@@ -186,9 +216,13 @@ fun MainScreen() {
 @Composable
 fun MyTopAppBar(currentDestination: String?, onBackClick: () -> Unit, onProfileClick: () -> Unit) {
     val topAppBarVisible = remember { mutableStateOf(false) }
-    val routes = arrayOf("splash","login","signup","player")
+    val routes = arrayOf("splash", "login", "signup", "player")
     topAppBarVisible.value =
-        if (currentDestination == null) { false } else { !(routes.any { route -> currentDestination.contains(route) }) }
+        if (currentDestination == null) {
+            false
+        } else {
+            !(routes.any { route -> currentDestination.contains(route) })
+        }
 
     if (topAppBarVisible.value) {
         TopAppBar(
@@ -235,13 +269,22 @@ fun MyTopAppBar(currentDestination: String?, onBackClick: () -> Unit, onProfileC
 }
 
 @Composable
-fun MyBottomBar(currentDestination: String?, onHomeClick: () -> Unit, onSearchClick: () -> Unit, onLikesClick: () -> Unit) {
+fun MyBottomBar(
+    currentDestination: String?,
+    onHomeClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onLikesClick: () -> Unit
+) {
     val bottomAppBarVisible = remember { mutableStateOf(false) }
-    val routes = arrayOf("splash","login","signup","player")
+    val routes = arrayOf("splash", "login", "signup", "player")
     bottomAppBarVisible.value =
-        if (currentDestination == null) { false } else { !(routes.any { route -> currentDestination.contains(route) }) }
+        if (currentDestination == null) {
+            false
+        } else {
+            !(routes.any { route -> currentDestination.contains(route) })
+        }
 
-    if (bottomAppBarVisible.value){
+    if (bottomAppBarVisible.value) {
         NavigationBar(containerColor = Color.White) {
             NavigationBarItem(
                 icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
@@ -268,7 +311,7 @@ fun MyBottomBar(currentDestination: String?, onHomeClick: () -> Unit, onSearchCl
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = Color.LightGray
                 ),
-                onClick = { onLikesClick () }
+                onClick = { onLikesClick() }
             )
         }
     }

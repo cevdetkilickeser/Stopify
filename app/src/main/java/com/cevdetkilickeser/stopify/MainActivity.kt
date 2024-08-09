@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.rememberNavController
 import com.cevdetkilickeser.stopify.ui.MainScreen
 import com.cevdetkilickeser.stopify.ui.theme.StopifyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,9 +17,12 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private lateinit var networkMonitor: NetworkMonitor
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
+        networkMonitor = NetworkMonitor(this)
         setContent {
             StopifyTheme {
                 val statusBarColor = Color.Black
@@ -26,9 +30,23 @@ class MainActivity : ComponentActivity() {
                 SideEffect {
                     window.statusBarColor = statusBarColor.toArgb()
                 }
-                MainScreen()
+                val navController = rememberNavController()
+                MainScreen(navController, networkMonitor)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        networkMonitor.startNetworkCallback(
+            onNetworkAvailable = {  },
+            onNetworkLost = {  }
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        networkMonitor.stopNetworkCallback()
     }
 }
 
