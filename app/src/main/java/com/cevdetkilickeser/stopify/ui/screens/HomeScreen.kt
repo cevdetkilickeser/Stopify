@@ -80,7 +80,7 @@ fun GenreCard(genreData: GenreData, navController: NavController) {
         shape = RoundedCornerShape(8.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().background(color = Color.LightGray)
         ) {
             Image(
                 painter = rememberAsyncImagePainter(genreData.picture),
