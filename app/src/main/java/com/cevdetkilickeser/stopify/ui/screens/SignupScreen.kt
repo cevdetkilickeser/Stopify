@@ -2,6 +2,7 @@ package com.cevdetkilickeser.stopify.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -39,6 +41,7 @@ import com.cevdetkilickeser.stopify.viewmodel.VMSignup
 fun SignupScreen(navController: NavController, viewModel: VMSignup = hiltViewModel()) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val loadingState by viewModel.loadingState.collectAsState()
     val signupState by viewModel.signupState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -104,20 +107,24 @@ fun SignupScreen(navController: NavController, viewModel: VMSignup = hiltViewMod
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = {
-                viewModel.signup(email.value, password.value)
-                keyboardController?.hide()
-            },
-            enabled = email.value.isNotEmpty() && password.value.isNotEmpty(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 32.dp, end = 32.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (email.value.isNotEmpty() && password.value.isNotEmpty()) Color.Black else Color.Gray
-            )
-        ) {
-            Text("Signup")
+        if (loadingState) {
+            CircularProgressIndicator(color = Color.Black)
+        } else {
+            Button(
+                onClick = {
+                    viewModel.signup(email.value, password.value)
+                    keyboardController?.hide()
+                },
+                enabled = email.value.isNotEmpty() && password.value.isNotEmpty(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 32.dp, end = 32.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (email.value.isNotEmpty() && password.value.isNotEmpty()) Color.Black else Color.Gray
+                )
+            ) {
+                Text("Signup")
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -128,6 +135,21 @@ fun SignupScreen(navController: NavController, viewModel: VMSignup = hiltViewMod
                 color = Color.Red,
                 style = MaterialTheme.typography.bodySmall
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
+
+        Text(text = "Already have an account?")
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Log in",
+            color = Color.Red,
+            modifier = Modifier
+                .clickable {
+                    navController.navigate("login")
+                }
+        )
     }
 }

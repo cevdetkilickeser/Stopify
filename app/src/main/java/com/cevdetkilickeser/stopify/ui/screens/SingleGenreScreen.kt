@@ -27,15 +27,30 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
+import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
+import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMSingleGenre
 
 @Composable
 fun SingleGenreScreen(navController: NavController, genreId: String, viewModel: VMSingleGenre = hiltViewModel()) {
+
+    val singleGenreDataList by viewModel.state.collectAsState()
+    val loadingState by viewModel.loadingState.collectAsState()
+    val errorState by viewModel.errorState.collectAsState()
+
     LaunchedEffect(key1 = genreId) {
         viewModel.getSingleGenreDataList(genreId)
     }
-    val singleGenreDataList by viewModel.state.collectAsState()
-    SingleGenreList(singleGenreDataList = singleGenreDataList, navController)
+
+    if (errorState.isNullOrEmpty()) {
+        if (loadingState) {
+            LoadingComponent()
+        } else {
+            SingleGenreList(singleGenreDataList = singleGenreDataList, navController)
+        }
+    } else {
+        ErrorScreen(errorMessage = errorState!!)
+    }
 }
 
 @Composable

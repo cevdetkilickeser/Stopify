@@ -1,6 +1,5 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.data.entity.Like
@@ -25,13 +24,21 @@ class VMPlaylist @Inject constructor(
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
 
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
     fun getPlaylistDataList(playlistId: String) {
         viewModelScope.launch {
             try {
                 val trackList = serviceRepository.getTrackList(playlistId)
+                _loadingState.value = false
+                _errorState.value = null
                 _trackListState.value = trackList
             } catch (e: Exception) {
-                Log.e("ŞŞŞ", "Hata")
+                _errorState.value = e.message
             }
         }
     }

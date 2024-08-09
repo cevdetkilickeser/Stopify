@@ -1,6 +1,5 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
@@ -16,14 +15,21 @@ class VMSingleGenre @Inject constructor(private val repository: ServiceRepositor
     private val _state = MutableStateFlow<List<SingleGenreData>>(emptyList())
     val state: StateFlow<List<SingleGenreData>> = _state
 
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
 
     fun getSingleGenreDataList(genreId: String) {
         viewModelScope.launch {
             try {
-                val singleGenreDataList = repository.getSingleGenreDataList(genreId)
-                _state.value = singleGenreDataList
+                _state.value = repository.getSingleGenreDataList(genreId)
+                _loadingState.value = false
+                _errorState.value = null
             } catch (e: Exception) {
-                Log.e("ŞŞŞ", "Hata")
+                _errorState.value = e.message
             }
         }
     }

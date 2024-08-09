@@ -19,14 +19,19 @@ class VMSignup @Inject constructor(
     private val _errorState = MutableStateFlow<String?>(null)
     val errorState: StateFlow<String?> = _errorState
 
+    private val _loadingState = MutableStateFlow(false)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
     fun signup(email: String, password: String) {
         viewModelScope.launch {
             try {
+                _loadingState.value =  true
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         _signupState.value = task.isSuccessful
                     }.addOnFailureListener { error ->
                         _errorState.value = error.message
+                        _loadingState.value = false
                     }
             } catch (e: Exception) {
                 _signupState.value = false

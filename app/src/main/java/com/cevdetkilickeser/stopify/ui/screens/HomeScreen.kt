@@ -29,19 +29,34 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.data.model.genre.GenreData
+import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
+import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMHome
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: VMHome = hiltViewModel()) {
     val genreDataList by viewModel.state.collectAsState()
-    GenreGrid(genreDataList = genreDataList, navController)
+    val loadingState by viewModel.loadingState.collectAsState()
+    val errorState by viewModel.errorState.collectAsState()
+
+    if (errorState.isNullOrEmpty()) {
+        if (loadingState) {
+            LoadingComponent()
+        } else {
+            GenreGrid(genreDataList = genreDataList, navController)
+        }
+    } else {
+        ErrorScreen(errorMessage = errorState!!)
+    }
 }
 
 @Composable
 fun GenreGrid(genreDataList: List<GenreData>, navController: NavController) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize().background(Color.White),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -41,6 +42,7 @@ import com.cevdetkilickeser.stopify.viewmodel.VMLogin
 fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel()) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val loadingState by viewModel.loadingState.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -106,20 +108,24 @@ fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = {
-                viewModel.login(email.value, password.value)
-                keyboardController?.hide()
-            },
-            enabled = email.value.isNotEmpty() && password.value.isNotEmpty(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 32.dp, end = 32.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (email.value.isNotEmpty() && password.value.isNotEmpty()) Color.Black else Color.Gray
-            )
-        ) {
-            Text("Login")
+        if (loadingState){
+            CircularProgressIndicator(color = Color.Black)
+        }else{
+            Button(
+                onClick = {
+                    viewModel.login(email.value, password.value)
+                    keyboardController?.hide()
+                },
+                enabled = email.value.isNotEmpty() && password.value.isNotEmpty(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 32.dp, end = 32.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (email.value.isNotEmpty() && password.value.isNotEmpty()) Color.Black else Color.Gray
+                )
+            ) {
+                Text("Login")
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
