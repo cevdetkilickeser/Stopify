@@ -41,20 +41,20 @@ import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 
 @OptIn(UnstableApi::class)
 @Composable
-fun MusicPlayerScreen(playerTrack: PlayerTrack,
+fun MusicPlayerScreen(startIndex: Int, playerTrackList: List<PlayerTrack>,
                       viewModel: VMMusicPlayer = hiltViewModel()
 ) {
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPosition by viewModel.currentPosition.collectAsState()
     val duration by viewModel.duration.collectAsState()
     val isDownload by viewModel.isDownloadState.collectAsState()
+    val currentTrack by viewModel.currentTrack.collectAsState()
 
     val sliderPosition = (currentPosition / 1000).toFloat()
     val sliderDuration = (duration / 1000).toFloat()
 
-    LaunchedEffect(key1 = playerTrack) {
-        viewModel.getDownloads(playerTrack.trackPreview)
-        viewModel.load(playerTrack.trackPreview)
+    LaunchedEffect(startIndex, playerTrackList) {
+        viewModel.load(startIndex, playerTrackList)
         viewModel.play()
     }
 
@@ -65,12 +65,12 @@ fun MusicPlayerScreen(playerTrack: PlayerTrack,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(painter = rememberAsyncImagePainter(playerTrack.trackImage), contentDescription = "Track Image", modifier = Modifier.size(200.dp))
+        Image(painter = rememberAsyncImagePainter(currentTrack?.trackImage), contentDescription = "Track Image", modifier = Modifier.size(200.dp))
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = playerTrack.trackTitle,
+            text = currentTrack?.trackTitle ?: "Title",
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -81,7 +81,7 @@ fun MusicPlayerScreen(playerTrack: PlayerTrack,
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = playerTrack.trackArtistName,
+            text = currentTrack?.trackArtistName ?: "Artist Name",
             style = MaterialTheme.typography.labelLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -117,7 +117,7 @@ fun MusicPlayerScreen(playerTrack: PlayerTrack,
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(onClick = { /* TODO: Previous song */ }) {
+            IconButton(onClick = { viewModel.previousSong() }) {
                 Icon(painter = painterResource(id = R.drawable.ic_skip_previous), contentDescription = "Previous",
                     modifier = Modifier.size(100.dp))
             }
@@ -133,13 +133,13 @@ fun MusicPlayerScreen(playerTrack: PlayerTrack,
             IconButton(onClick = { viewModel.fastForward() }) {
                 Icon(painter = painterResource(id = R.drawable.ic_forward_10), contentDescription = "Forward 10s")
             }
-            IconButton(onClick = { /* TODO: Next song */ }) {
+            IconButton(onClick = { viewModel.nextSong() }) {
                 Icon(painter = painterResource(id = R.drawable.ic_skip_next), contentDescription = "Next",
                     modifier = Modifier.size(100.dp))
             }
         }
 
-        IconButton(onClick = { viewModel.downloadSong(playerTrack) }) {
+        IconButton(onClick = { currentTrack?.let { viewModel.downloadSong(it) } }) {
             Icon(if (isDownload) Icons.Default.Done else Icons.Default.Add, contentDescription = "Download")
         }
     }
