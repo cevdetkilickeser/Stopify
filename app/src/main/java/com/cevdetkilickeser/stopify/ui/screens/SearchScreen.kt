@@ -110,15 +110,11 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                 "Track" -> HistoryTrackList(
                     historyList = historyTrackList,
                     onHistoryClick = { history ->
-                        val playerTrack = PlayerTrack(
-                            history.trackId!!.urlToString(),
-                            history.trackTitle!!.urlToString().replace("+", " "),
-                            history.trackPreview!!.urlToString(),
-                            history.trackImage!!.urlToString(),
-                            history.trackArtistName!!.urlToString().replace("+", " ")
-                        )
-                        val playerTrackGson = Gson().toJson(playerTrack)
-                        navController.navigate("player/$playerTrackGson")
+                        val playerTrackList = listOf(PlayerTrack(history.trackId!!, history.trackTitle!!.urlToString().replace("+"," "), history.trackPreview!!.urlToString(), history.trackImage!!.urlToString(), history.trackArtistName!!.urlToString().replace("+"," ")))
+                        val playerTrackListGson = Gson().toJson(playerTrackList)
+                        val playerTrack = playerTrackList.find { it.trackId == history.trackId }
+                        val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                        navController.navigate("player/$startIndex/$playerTrackListGson")
                 },
                     onDeleteHistoryClick = { history ->
                         viewModel.deleteHistory(history,selectedFilter)
@@ -156,15 +152,11 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                             )
                         )
                     }
-                    val playerTrack = PlayerTrack(
-                        track.id.urlToString(),
-                        track.title.urlToString().replace("+"," "),
-                        track.preview.urlToString(),
-                        track.album.cover.urlToString(),
-                        track.artist.name.urlToString().replace("+"," ")
-                    )
-                    val playerTrackGson = Gson().toJson(playerTrack)
-                    navController.navigate("player/$playerTrackGson")
+                    val playerTrackList = listOf(PlayerTrack(track.id, track.title.urlToString().replace("+"," "), track.preview.urlToString() ,track.album.cover.urlToString() ,track.artist.name.urlToString().replace("+"," ")))
+                    val playerTrackListGson = Gson().toJson(playerTrackList)
+                    val playerTrack = playerTrackList.find { it.trackId == track.id }
+                    val startIndex = playerTrack.let { playerTrackList.indexOf(it) }
+                    navController.navigate("player/$startIndex/$playerTrackListGson")
                 })
 
                 "Artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->

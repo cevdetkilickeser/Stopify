@@ -33,15 +33,11 @@ fun LikesScreen(
             LoadingComponent()
         } else {
             LikeList(likeList = likeList, onLikeClick = { like ->
-                val playerTrack = PlayerTrack(
-                    like.trackId.urlToString(),
-                    like.trackTitle.urlToString().replace("+"," "),
-                    like.trackPreview.urlToString(),
-                    like.trackImage.urlToString(),
-                    like.trackArtistName.urlToString().replace("+"," ")
-                )
-                val playerTrackGson = Gson().toJson(playerTrack)
-                navController.navigate("player/$playerTrackGson")
+                val playerTrackList = likeList.map { PlayerTrack(it.trackId,it.trackTitle.urlToString().replace("+"," "),it.trackPreview.urlToString(),it.trackImage.urlToString(),it.trackArtistName.urlToString().replace("+"," ")) }
+                val playerTrackListGson = Gson().toJson(playerTrackList)
+                val playerTrack = playerTrackList.find { it.trackId == like.trackId }
+                val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                navController.navigate("player/$startIndex/$playerTrackListGson")
             },
                 onDeleteLikeClick = { like ->
                     viewModel.deleteLike(like)
