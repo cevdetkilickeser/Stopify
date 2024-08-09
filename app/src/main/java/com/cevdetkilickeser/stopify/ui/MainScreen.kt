@@ -61,6 +61,7 @@ import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
 import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 @Composable
 fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor) {
@@ -132,7 +133,6 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
                 })
         },
         content = { innerPadding ->
-            println(userId)
             NavHost(
                 navController = navController,
                 startDestination = if (userId.isNullOrEmpty()) {
@@ -193,16 +193,20 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
                     AlbumScreen(navController = navController, albumId = albumId, userId = userId!!)
                 }
                 composable(
-                    "player/{player_track}",
+                    "player/{start_index}/{player_track_list}",
                     arguments = listOf(
-                        navArgument("player_track") { type = NavType.StringType })
+                        navArgument("start_index") { type = NavType.IntType },
+                        navArgument("player_track_list") { type = NavType.StringType }
+                        )
                 ) { navBackStackEntry ->
-                    val playerTrackGson =
-                        navBackStackEntry.arguments?.getString("player_track") ?: return@composable
-                    val playerTrack = Gson().fromJson(playerTrackGson, PlayerTrack::class.java)
-                    MusicPlayerScreen(
-                        playerTrack = playerTrack
-                    )
+                    val startIndex =
+                        navBackStackEntry.arguments?.getInt("start_index") ?: return@composable
+                    val playerTrackListGson =
+                        navBackStackEntry.arguments?.getString("player_track_list") ?: return@composable
+                    val listType = object : TypeToken<List<PlayerTrack>>() {}.type
+                    val playerTrackList = Gson().fromJson<List<PlayerTrack>>(playerTrackListGson, listType)
+                    println("MainScreen $playerTrackList")
+                    MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList)
                 }
                 composable("downloads") {
                     DownloadsScreen()

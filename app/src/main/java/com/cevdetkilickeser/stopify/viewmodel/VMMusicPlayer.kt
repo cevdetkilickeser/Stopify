@@ -29,8 +29,7 @@ import javax.inject.Inject
 class VMMusicPlayer @Inject constructor(application: Application, private val downloadRepository: DownloadRepository, private val savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
 
-    private val context = application.applicationContext
-    private val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    private val downloadManager = application.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
     private val _player: ExoPlayer = ExoPlayer.Builder(application)
         .setSeekForwardIncrementMs(10000L)
@@ -46,6 +45,12 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     private val _duration = MutableStateFlow(0L)
     val duration: StateFlow<Long> = _duration
 
+    private val _playerListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val playerListState: StateFlow<List<PlayerTrack>> = _playerListState
+
+    private val _currentTrack = MutableStateFlow<PlayerTrack?>(null)
+    val currentTrack: StateFlow<PlayerTrack?> = _currentTrack
+
     private val _downloadListState = MutableStateFlow<List<Download>>(emptyList())
 
     private val _isDownloadState = MutableStateFlow(false)
@@ -56,6 +61,10 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         _player.seekTo(savedPosition)
 
         _player.addListener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                val url = mediaItem?.localConfiguration?.uri.toString()
+                _currentTrack.value = _playerListState.value.find { playerTrack -> playerTrack.trackPreview == url }
+            }
             override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
                     Player.STATE_READY -> {
@@ -75,9 +84,11 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         })
     }
 
-    fun load(url: String) {
-        val mediaItem = MediaItem.fromUri(url)
-        _player.setMediaItem(mediaItem)
+    fun load(startIndex: Int, playerTrackList: List<PlayerTrack>) {
+        println("VMMusicPlayer $playerTrackList")
+        _playerListState.value = playerTrackList
+        val mediaItems = playerTrackList.map { playerTrack -> MediaItem.fromUri(playerTrack.trackPreview) }
+        _player.setMediaItems(mediaItems,startIndex,0L)
         _player.prepare()
     }
 
@@ -90,6 +101,27 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     fun pause() {
         _player.pause()
         _isPlaying.value = false
+    }
+
+    fun nextSong() {
+        val currentIndex = _player.currentMediaItemIndex
+        if (currentIndex < _player.mediaItemCount - 1) {
+            _player.seekTo(currentIndex + 1, 0L)
+            _player.play()
+        }
+    }
+
+    fun previousSong() {
+        if (_currentPosition.value > 1000L){
+            _player.seekBack()
+            _currentPosition.value = 0L
+        } else  {
+            val currentIndex = _player.currentMediaItemIndex
+            if (currentIndex > 0) {
+                _player.seekTo(currentIndex - 1, 0L)
+                _player.play()
+            }
+        }
     }
 
     fun rewind() {
