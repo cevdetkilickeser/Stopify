@@ -16,9 +16,21 @@ class VMLikes @Inject constructor(private val likeRepository: LikeRepository) : 
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
 
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
     fun getLikes(userId: String) {
         viewModelScope.launch {
-            _likeListState.value = likeRepository.getLikes(userId)
+            try {
+                _likeListState.value = likeRepository.getLikes(userId)
+                _loadingState.value = false
+                _errorState.value = null
+            } catch (e: Exception) {
+                _errorState.value = e.message
+            }
         }
     }
 

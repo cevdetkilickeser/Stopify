@@ -33,10 +33,9 @@ class VMPlaylist @Inject constructor(
     fun getPlaylistDataList(playlistId: String) {
         viewModelScope.launch {
             try {
-                val trackList = serviceRepository.getTrackList(playlistId)
+                _trackListState.value = serviceRepository.getTrackList(playlistId)
                 _loadingState.value = false
                 _errorState.value = null
-                _trackListState.value = trackList
             } catch (e: Exception) {
                 _errorState.value = e.message
             }

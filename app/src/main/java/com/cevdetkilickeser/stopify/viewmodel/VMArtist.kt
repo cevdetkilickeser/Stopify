@@ -20,9 +20,21 @@ class VMArtist @Inject constructor(private val serviceRepository: ServiceReposit
     private val _artistAlbumState = MutableStateFlow<List<ArtistAlbumData>>(emptyList())
     val artistAlbumState: StateFlow<List<ArtistAlbumData>> = _artistAlbumState
 
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
     fun getArtist(artistId: String) {
         viewModelScope.launch {
-            _artistState.value = serviceRepository.getArtistResponse(artistId)
+            try {
+                _artistState.value = serviceRepository.getArtistResponse(artistId)
+                _loadingState.value = false
+                _errorState.value = null
+            } catch (e: Exception) {
+                _errorState.value = e.message
+            }
         }
     }
 

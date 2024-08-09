@@ -21,9 +21,21 @@ class VMAlbum @Inject constructor(private val serviceRepository: ServiceReposito
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
 
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
     fun getAlbum(albumId: String)  {
         viewModelScope.launch {
-            _albumState.value = serviceRepository.getAlbumResponse(albumId)
+            try {
+                _albumState.value = serviceRepository.getAlbumResponse(albumId)
+                _loadingState.value = false
+                _errorState.value = null
+            } catch (e: Exception) {
+                _errorState.value = e.message
+            }
         }
     }
 

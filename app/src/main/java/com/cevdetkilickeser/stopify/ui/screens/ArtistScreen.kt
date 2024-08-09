@@ -19,6 +19,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.ui.component.ArtistAlbumList
+import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
+import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMArtist
 
 @Composable
@@ -27,32 +29,41 @@ fun ArtistScreen(
     viewModel: VMArtist = hiltViewModel(),
     artistId: String
 ) {
-
     val artist by viewModel.artistState.collectAsState()
     val artistAlbums by viewModel.artistAlbumState.collectAsState()
+    val loadingState by viewModel.loadingState.collectAsState()
+    val errorState by viewModel.errorState.collectAsState()
 
     LaunchedEffect(artistId) {
         viewModel.getArtist(artistId)
         viewModel.getArtistArtistAlbum(artistId)
     }
 
-    Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
+    if (errorState.isNullOrEmpty()) {
+        if (loadingState) {
+            LoadingComponent()
+        } else {
+            Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
 
-        Image(
-            painter = rememberAsyncImagePainter(artist?.pictureXl),
-            contentDescription = "Artist Image",
-            modifier = Modifier
-                .size(200.dp)
-                .fillMaxWidth(1f)
-        )
+                Image(
+                    painter = rememberAsyncImagePainter(artist?.pictureXl),
+                    contentDescription = "Artist Image",
+                    modifier = Modifier
+                        .size(200.dp)
+                        .fillMaxWidth(1f)
+                )
 
-        Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-        ArtistAlbumList(
-            albumList = artistAlbums,
-            onAlbumClick = { album ->
-                navController.navigate("album/${album.id}")
+                ArtistAlbumList(
+                    albumList = artistAlbums,
+                    onAlbumClick = { album ->
+                        navController.navigate("album/${album.id}")
+                    }
+                )
             }
-        )
+        }
+    } else {
+        ErrorScreen(errorMessage = errorState!!)
     }
 }
