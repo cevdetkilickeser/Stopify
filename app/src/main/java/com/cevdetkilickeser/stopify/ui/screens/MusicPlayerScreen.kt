@@ -128,7 +128,11 @@ fun MusicPlayerScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = { currentTrack?.let { viewModel.downloadSong(it) } }) {
+                IconButton(onClick = {
+                    currentTrack?.let {
+                        if (!isDownload) { viewModel.downloadSong(it) }
+                    }
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_download),
                         contentDescription = "Download",
