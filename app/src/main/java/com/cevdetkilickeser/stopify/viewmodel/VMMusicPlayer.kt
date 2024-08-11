@@ -146,6 +146,10 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         _player.seekTo(position)
     }
 
+    fun seekTo(index: Int, position: Long) {
+        _player.seekTo(index,position)
+    }
+
     private fun startUpdatingPosition() {
         viewModelScope.launch {
             while (_isPlaying.value) {
