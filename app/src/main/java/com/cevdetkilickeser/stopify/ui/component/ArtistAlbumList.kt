@@ -46,7 +46,7 @@ fun ArtistAlbumtItem(album: ArtistAlbumData, onAlbumClick: (ArtistAlbumData) -> 
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = rememberAsyncImagePainter(album.cover),
+            painter = rememberAsyncImagePainter(album.coverXl),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.size(64.dp)

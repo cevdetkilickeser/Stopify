@@ -78,7 +78,7 @@ fun TrackItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = rememberAsyncImagePainter(track.album.cover),
+                painter = rememberAsyncImagePainter(track.album.coverXl),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(64.dp)

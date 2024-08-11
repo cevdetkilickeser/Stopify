@@ -146,13 +146,13 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                                 userId = userId,
                                 trackId = track.id,
                                 trackTitle = track.title,
-                                trackImage = track.album.cover,
+                                trackImage = track.album.coverXl,
                                 trackArtistName = track.artist.name,
                                 trackPreview = track.preview
                             )
                         )
                     }
-                    val playerTrackList = listOf(PlayerTrack(track.id, track.title.convertStandardCharsets().replace("+"," "), track.preview.convertStandardCharsets() ,track.album.cover.convertStandardCharsets() ,track.artist.name.convertStandardCharsets().replace("+"," ")))
+                    val playerTrackList = listOf(PlayerTrack(track.id, track.title.convertStandardCharsets().replace("+"," "), track.preview.convertStandardCharsets() ,track.album.coverXl.convertStandardCharsets() ,track.artist.name.convertStandardCharsets().replace("+"," ")))
                     val playerTrackListGson = Gson().toJson(playerTrackList)
                     val playerTrack = playerTrackList.find { it.trackId == track.id }
                     val startIndex = playerTrack.let { playerTrackList.indexOf(it) }
@@ -183,7 +183,7 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                                 userId = userId,
                                 albumId = album.id,
                                 albumTitle = album.title,
-                                albumImage = album.cover,
+                                albumImage = album.coverXl,
                                 albumArtistName = album.artist.name
                             )
                         )
