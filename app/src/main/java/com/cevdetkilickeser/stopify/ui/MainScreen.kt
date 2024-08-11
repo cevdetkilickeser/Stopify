@@ -197,7 +197,7 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
                     arguments = listOf(
                         navArgument("start_index") { type = NavType.IntType },
                         navArgument("player_track_list") { type = NavType.StringType }
-                        )
+                    )
                 ) { navBackStackEntry ->
                     val startIndex =
                         navBackStackEntry.arguments?.getInt("start_index") ?: return@composable
@@ -208,7 +208,7 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
                     MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList)
                 }
                 composable("downloads") {
-                    DownloadsScreen()
+                    DownloadsScreen(navController = navController, userId = userId!!)
                 }
             }
         }
