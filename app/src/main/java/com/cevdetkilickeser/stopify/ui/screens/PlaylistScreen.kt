@@ -43,7 +43,6 @@ fun PlaylistScreen(
                 likeList = likeList,
                 onTrackClick = { track ->
                     val playerTrackList = trackList.map { PlayerTrack(it.id,it.title.urlToString().replace("+"," "),it.preview.urlToString(),it.album.cover.urlToString(),it.artist.name.urlToString().replace("+"," ")) }
-                    println("PlayerScreen $playerTrackList")
                     val playerTrackListGson = Gson().toJson(playerTrackList)
                     val playerTrack = playerTrackList.find { it.trackId == track.id }
                     val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0

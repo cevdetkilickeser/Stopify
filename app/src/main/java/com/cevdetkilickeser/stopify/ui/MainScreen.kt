@@ -205,7 +205,6 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
                         navBackStackEntry.arguments?.getString("player_track_list") ?: return@composable
                     val listType = object : TypeToken<List<PlayerTrack>>() {}.type
                     val playerTrackList = Gson().fromJson<List<PlayerTrack>>(playerTrackListGson, listType)
-                    println("MainScreen $playerTrackList")
                     MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList)
                 }
                 composable("downloads") {

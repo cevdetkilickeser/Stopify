@@ -46,7 +46,7 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     val duration: StateFlow<Long> = _duration
 
     private val _playerListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
-    val playerListState: StateFlow<List<PlayerTrack>> = _playerListState
+    //val playerListState: StateFlow<List<PlayerTrack>> = _playerListState
 
     private val _currentTrack = MutableStateFlow<PlayerTrack?>(null)
     val currentTrack: StateFlow<PlayerTrack?> = _currentTrack
@@ -85,7 +85,6 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     }
 
     fun load(startIndex: Int, playerTrackList: List<PlayerTrack>) {
-        println("VMMusicPlayer $playerTrackList")
         _playerListState.value = playerTrackList
         val mediaItems = playerTrackList.map { playerTrack -> MediaItem.fromUri(playerTrack.trackPreview) }
         _player.setMediaItems(mediaItems,startIndex,0L)
