@@ -10,7 +10,7 @@ import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LikeList
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
-import com.cevdetkilickeser.stopify.urlToString
+import com.cevdetkilickeser.stopify.convertStandardCharsets
 import com.cevdetkilickeser.stopify.viewmodel.VMLikes
 import com.google.gson.Gson
 
@@ -33,7 +33,7 @@ fun LikesScreen(
             LoadingComponent()
         } else {
             LikeList(likeList = likeList, onLikeClick = { like ->
-                val playerTrackList = likeList.map { PlayerTrack(it.trackId,it.trackTitle.urlToString().replace("+"," "),it.trackPreview.urlToString(),it.trackImage.urlToString(),it.trackArtistName.urlToString().replace("+"," ")) }
+                val playerTrackList = likeList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsets().replace("+"," "),it.trackPreview.convertStandardCharsets(),it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsets().replace("+"," ")) }
                 val playerTrackListGson = Gson().toJson(playerTrackList)
                 val playerTrack = playerTrackList.find { it.trackId == like.trackId }
                 val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0

@@ -6,7 +6,7 @@ import android.net.NetworkCapabilities
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-fun String.urlToString(): String {
+fun String.convertStandardCharsets(): String {
     return URLEncoder.encode(this, StandardCharsets.UTF_8.name())
 }
 
