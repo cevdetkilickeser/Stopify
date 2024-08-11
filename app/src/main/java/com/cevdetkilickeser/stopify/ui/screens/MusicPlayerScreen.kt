@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,6 +55,7 @@ import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 fun MusicPlayerScreen(
     startIndex: Int, playerTrackList: List<PlayerTrack>, viewModel: VMMusicPlayer = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPosition by viewModel.currentPosition.collectAsState()
     val duration by viewModel.duration.collectAsState()
@@ -226,7 +228,12 @@ fun MusicPlayerScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = { }) {
+                IconButton(onClick = {
+                    if (currentTrack != null) {
+                        val shareLink = currentTrack!!.trackPreview
+                        viewModel.share(shareLink, context)
+                    }
+                }) {
                     Icon(
                         Icons.Default.Share,
                         contentDescription = "Share",

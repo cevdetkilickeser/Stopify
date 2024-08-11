@@ -4,9 +4,11 @@ import android.app.Application
 import android.app.DownloadManager
 import android.app.DownloadManager.Request
 import android.content.Context
+import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -148,6 +150,21 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
 
     fun seekTo(index: Int, position: Long) {
         _player.seekTo(index,position)
+    }
+
+    fun share(shareLink: String,context: Context) {
+        val shareWith = "ShareWith"
+        val type = "text/plain"
+
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = type
+        intent.putExtra(Intent.EXTRA_TEXT, shareLink)
+
+        ContextCompat.startActivity(
+            context,
+            Intent.createChooser(intent, shareWith),
+            null
+        )
     }
 
     private fun startUpdatingPosition() {
