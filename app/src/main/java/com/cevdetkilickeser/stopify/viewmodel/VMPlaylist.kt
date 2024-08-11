@@ -34,6 +34,7 @@ class VMPlaylist @Inject constructor(
         viewModelScope.launch {
             try {
                 _trackListState.value = serviceRepository.getTrackList(playlistId)
+                    .filter { track -> track.preview.isNotEmpty() }
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {

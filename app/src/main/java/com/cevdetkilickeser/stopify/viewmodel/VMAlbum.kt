@@ -32,7 +32,11 @@ class VMAlbum @Inject constructor(private val serviceRepository: ServiceReposito
             try {
                 _albumState.value = serviceRepository.getAlbumResponse(albumId)
                 _loadingState.value = false
-                _errorState.value = null
+                if (_albumState.value != null)  {
+                    _errorState.value = null
+                } else {
+                    _errorState.value = "Album not found!"
+                }
             } catch (e: Exception) {
                 _errorState.value = e.message
             }

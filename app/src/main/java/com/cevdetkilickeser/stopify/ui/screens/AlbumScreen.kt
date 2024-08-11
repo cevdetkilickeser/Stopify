@@ -48,6 +48,9 @@ fun AlbumScreen(
         if (loadingState) {
             LoadingComponent()
         } else {
+            val trackList = album!!.tracks.trackDataList
+                .filter { track -> track.preview.isNotEmpty() }
+
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
 
                 Image(
@@ -57,38 +60,36 @@ fun AlbumScreen(
                         .size(200.dp)
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                album?.let {
-                    val trackList = album!!.tracks.trackDataList
-                    AlbumTrackList(
-                        isSearch = false,
-                        trackList = trackList,
-                        likeList = likeList,
-                        onTrackClick = { track ->
-                            val playerTrackList = trackList.map { PlayerTrack(it.id,it.title.convertStandardCharsets().replace("+"," "),it.preview.convertStandardCharsets(),it.trackDataAlbum.cover.convertStandardCharsets(),it.trackDataArtist.name.convertStandardCharsets().replace("+"," ")) }
-                            val playerTrackListGson = Gson().toJson(playerTrackList)
-                            val playerTrack = playerTrackList.find { it.trackId == track.id }
-                            val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-                            navController.navigate("player/$startIndex/$playerTrackListGson")
-                        },
-                        onLikeClick = { track, isLike ->
-                            if (isLike) {
-                                viewModel.deleteLikeByTrackId(userId, track.id)
-                            } else {
-                                viewModel.insertLike(
-                                    Like(
-                                        0,
-                                        userId,
-                                        track.id,
-                                        track.title,
-                                        track.trackDataArtist.name,
-                                        track.trackDataAlbum.cover,
-                                        track.preview
-                                    )
+
+                AlbumTrackList(
+                    isSearch = false,
+                    trackList = trackList,
+                    likeList = likeList,
+                    onTrackClick = { track ->
+                        val playerTrackList = trackList.map { PlayerTrack(it.id,it.title.convertStandardCharsets().replace("+"," "),it.preview.convertStandardCharsets(),it.trackDataAlbum.coverXl.convertStandardCharsets(),it.trackDataArtist.name.convertStandardCharsets().replace("+"," ")) }
+                        val playerTrackListGson = Gson().toJson(playerTrackList)
+                        val playerTrack = playerTrackList.find { it.trackId == track.id }
+                        val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                        navController.navigate("player/$startIndex/$playerTrackListGson")
+                    },
+                    onLikeClick = { track, isLike ->
+                        if (isLike) {
+                            viewModel.deleteLikeByTrackId(userId, track.id)
+                        } else {
+                            viewModel.insertLike(
+                                Like(
+                                    0,
+                                    userId,
+                                    track.id,
+                                    track.title,
+                                    track.trackDataArtist.name,
+                                    track.trackDataAlbum.coverXl,
+                                    track.preview
                                 )
-                            }
+                            )
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     } else {

@@ -46,6 +46,7 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
         viewModelScope.launch {
             try {
                 val trackList = serviceRepository.getSearchResponse(query)
+                    .filter { track -> track.preview.isNotEmpty() }
                 _trackListState.value = trackList
             } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")
