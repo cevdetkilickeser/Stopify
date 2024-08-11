@@ -48,6 +48,7 @@ fun PlayerTrackList(
         LazyColumn(
             modifier = Modifier
                 .background(color = Color.White)
+                .padding(bottom = 64.dp)
         ) {
             items(playerList) { playerTrack ->
                 PlayerTrackItem(
