@@ -70,6 +70,7 @@ fun MusicPlayerScreen(
     val sliderDuration = (duration / 1000).toFloat()
 
     LaunchedEffect(startIndex, playerTrackList) {
+        viewModel.getDownloads(playerTrackList[startIndex].trackId)
         viewModel.load(startIndex, playerTrackList)
         viewModel.play()
     }
@@ -237,11 +238,6 @@ fun MusicPlayerScreen(
                     Icon(
                         Icons.Default.Share,
                         contentDescription = "Share",
-                        tint = if (isDownload) {
-                            Color.Green
-                        } else {
-                            Color.Black
-                        },
                         modifier = Modifier.size(32.dp)
                     )
                 }

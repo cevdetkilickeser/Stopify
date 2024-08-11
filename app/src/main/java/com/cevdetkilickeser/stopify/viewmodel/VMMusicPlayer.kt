@@ -182,10 +182,10 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         _player.release()
     }
 
-    fun getDownloads(preview: String) {
+    fun getDownloads(trackId: String) {
         viewModelScope.launch {
             _downloadListState.value = downloadRepository.getDownloads()
-            _isDownloadState.value = _downloadListState.value.any {it.trackPreview == preview}
+            _isDownloadState.value = _downloadListState.value.any {it.trackId == trackId}
         }
     }
 
@@ -201,7 +201,7 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
                 val fileUri: String? = getDownloadedFileUri(downloadManager,downloadId)
                 val download = Download(0, fileUri, playerTrack.trackId, playerTrack.trackPreview, playerTrack.trackTitle, playerTrack.trackImage, playerTrack.trackArtistName)
                 downloadRepository.insertDownload(download)
-                getDownloads(playerTrack.trackPreview)
+                getDownloads(playerTrack.trackId)
             } catch (e: Exception) {
                 Log.e("şşş","Hata")
             }
