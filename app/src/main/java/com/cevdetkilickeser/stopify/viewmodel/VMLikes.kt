@@ -25,7 +25,7 @@ class VMLikes @Inject constructor(private val likeRepository: LikeRepository) : 
     fun getLikes(userId: String) {
         viewModelScope.launch {
             try {
-                _likeListState.value = likeRepository.getLikes(userId)
+                _likeListState.value = likeRepository.getLikes(userId).sortedByDescending { it.likeId }
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {

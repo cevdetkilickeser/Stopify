@@ -80,9 +80,9 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
         viewModelScope.launch {
             try {
                 when (selectedFilter) {
-                    "Track" -> _historyTrackListState.value = historyRepository.getTrackHistory()
-                    "Artist" -> _historyArtistListState.value = historyRepository.getArtistHistory()
-                    "Album" -> _historyAlbumListState.value = historyRepository.getAlbumHistory()
+                    "Track" -> _historyTrackListState.value = historyRepository.getTrackHistory().sortedByDescending { it.historyId }
+                    "Artist" -> _historyArtistListState.value = historyRepository.getArtistHistory().sortedByDescending { it.historyId }
+                    "Album" -> _historyAlbumListState.value = historyRepository.getAlbumHistory().sortedByDescending { it.historyId }
                 }
             } catch (e: Exception) {
                 Log.e("ŞŞŞ", "Hata")
