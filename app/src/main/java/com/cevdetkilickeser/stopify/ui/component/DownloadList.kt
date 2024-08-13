@@ -106,17 +106,12 @@ fun DownloadItem(
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
-            IconButton(onClick = { onLikeClick(download, isLike) }) {
-                Icon(
-                    imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .clickable {
-                            onLikeClick(download, isLike)
-                        }
-                )
-            }
+        }
+        IconButton(onClick = { onLikeClick(download, isLike) }) {
+            Icon(
+                imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                contentDescription = null
+            )
         }
     }
 }
