@@ -38,7 +38,7 @@ fun LikeList(likeList: List<Like>, onLikeClick: (Like) -> Unit, onDeleteLikeClic
             .fillMaxSize()
     ) {
         items(likeList) { like ->
-            LikeItem(like = like, onLikeClick = onLikeClick, onDeleteLikeClick)
+            LikeItem(like = like, onLikeClick = onLikeClick, onDeleteLikeClick = onDeleteLikeClick)
         }
     }
 }
@@ -60,7 +60,7 @@ fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) 
                 painter = rememberAsyncImagePainter(like.trackImage),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier.size(64.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column {
@@ -76,6 +76,7 @@ fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) 
                 Text(
                     text = like.trackArtistName,
                     style = MaterialTheme.typography.titleSmall,
+                    color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
