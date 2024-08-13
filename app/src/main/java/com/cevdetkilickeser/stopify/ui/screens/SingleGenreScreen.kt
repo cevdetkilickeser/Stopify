@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
@@ -56,7 +57,12 @@ fun SingleGenreScreen(navController: NavController, genreId: String, genreName: 
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(text = genreName, fontSize = 24.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(8.dp))
-                SingleGenreList(genreName = genreName, singleGenreDataList = singleGenreDataList, navController =  navController)
+                SingleGenreList(
+                    singleGenreDataList = singleGenreDataList,
+                    onClick = { singleGenreData ->
+                        navController.navigate("playlist/${genreName.convertStandardCharsetsReplacePlusWithSpace()}/${singleGenreData.id}/${singleGenreData.title.convertStandardCharsetsReplacePlusWithSpace()}")
+                    }
+                )
             }
         }
     } else {
@@ -65,27 +71,25 @@ fun SingleGenreScreen(navController: NavController, genreId: String, genreName: 
 }
 
 @Composable
-fun SingleGenreList(genreName: String, singleGenreDataList: List<SingleGenreData>, navController: NavController) {
+fun SingleGenreList(singleGenreDataList: List<SingleGenreData>, onClick: (SingleGenreData) -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
     ) {
         items(singleGenreDataList) { singleGenre ->
-            SingleGenreRow(genreName = genreName, singleGenreData = singleGenre, navController =  navController)
+            SingleGenreRow(singleGenreData = singleGenre, onClick = onClick)
         }
     }
 }
 
 @Composable
-fun SingleGenreRow(genreName: String, singleGenreData: SingleGenreData, navController: NavController) {
+fun SingleGenreRow(singleGenreData: SingleGenreData, onClick: (SingleGenreData) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .clickable {
-                navController.navigate("playlist/$genreName/${singleGenreData.id}/${singleGenreData.title}")
-            },
+            .clickable { onClick(singleGenreData) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
