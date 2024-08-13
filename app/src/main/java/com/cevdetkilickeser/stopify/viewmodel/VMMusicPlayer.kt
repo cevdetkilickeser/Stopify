@@ -17,8 +17,11 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.cevdetkilickeser.stopify.data.entity.Download
+import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.data.model.playlist.UserPlaylistResponse
 import com.cevdetkilickeser.stopify.repo.DownloadRepository
+import com.cevdetkilickeser.stopify.repo.UserPlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +31,7 @@ import javax.inject.Inject
 
 @UnstableApi
 @HiltViewModel
-class VMMusicPlayer @Inject constructor(application: Application, private val downloadRepository: DownloadRepository, private val savedStateHandle: SavedStateHandle
+class VMMusicPlayer @Inject constructor(application: Application, private val downloadRepository: DownloadRepository, private val userPlaylistRepository: UserPlaylistRepository, private val savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
 
     private val downloadManager = application.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -58,6 +61,12 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     private val _isDownloadState = MutableStateFlow(false)
     val isDownloadState: StateFlow<Boolean> =  _isDownloadState
 
+    private val _userPlaylistResponsesState = MutableStateFlow<List<UserPlaylistResponse>>(emptyList())
+    val userPlaylistResponsesState: StateFlow<List<UserPlaylistResponse>> =  _userPlaylistResponsesState
+
+    private val _nextUserPlaylistId = MutableStateFlow(0)
+    val nextUserPlaylistId: StateFlow<Int> = _nextUserPlaylistId
+
     init {
         val savedPosition = savedStateHandle.get<Long>("currentPosition") ?: 0L
         _player.seekTo(savedPosition)
@@ -66,6 +75,7 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 val url = mediaItem?.localConfiguration?.uri.toString()
                 _currentTrack.value = _playerListState.value.find { playerTrack -> playerTrack.trackPreview == url }
+                _isDownloadState.value = _downloadListState.value.any {it.trackId == currentTrack.value?.trackId}
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
@@ -73,7 +83,12 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
                         _duration.value = _player.duration
                         _isPlaying.value = _player.playWhenReady
                     }
-                    Player.STATE_ENDED -> _player.seekTo(0)
+                    Player.STATE_ENDED -> {
+                        _player.seekTo(0, 0L)
+                        _player.pause()
+                        _isPlaying.value = false
+                        _currentPosition.value = 0L
+                    }
                     Player.STATE_BUFFERING -> {
 
                     }
@@ -221,5 +236,30 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         }
         cursor.close()
         return null
+    }
+
+    fun getUserPlaylistResponses(userId: String) {
+        viewModelScope.launch {
+            try {
+                _userPlaylistResponsesState.value = userPlaylistRepository.getUserPlaylistResponses(userId)
+                _nextUserPlaylistId.value = userPlaylistRepository.getUserPlaylistResponses(userId).last().userPlaylistId + 1
+            } catch (e:Exception) {
+                Log.e("şşş","Hata")
+            }
+        }
+    }
+
+    fun insertTrackToUserPlaylist(userPlaylistTrack: UserPlaylistTrack) {
+        viewModelScope.launch {
+            userPlaylistRepository.insertTrackToUserPlaylist(userPlaylistTrack)
+            getUserPlaylistResponses(userPlaylistTrack.userId)
+        }
+    }
+
+    fun insertTrackToNewUserPlaylist(userPlaylistTrack: UserPlaylistTrack) {
+        viewModelScope.launch {
+            userPlaylistRepository.insertTrackToUserPlaylist(userPlaylistTrack)
+            getUserPlaylistResponses(userPlaylistTrack.userId)
+        }
     }
 }

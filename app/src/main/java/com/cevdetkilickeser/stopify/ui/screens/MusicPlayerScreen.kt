@@ -5,18 +5,26 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +33,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,12 +47,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
+import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.PlayerTrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
@@ -53,7 +64,7 @@ import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 @kotlin.OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MusicPlayerScreen(
-    startIndex: Int, playerTrackList: List<PlayerTrack>, viewModel: VMMusicPlayer = hiltViewModel()
+    startIndex: Int, playerTrackList: List<PlayerTrack>, userId: String, viewModel: VMMusicPlayer = hiltViewModel()
 ) {
     val context = LocalContext.current
     val isPlaying by viewModel.isPlaying.collectAsState()
@@ -61,7 +72,11 @@ fun MusicPlayerScreen(
     val duration by viewModel.duration.collectAsState()
     val isDownload by viewModel.isDownloadState.collectAsState()
     val currentTrack by viewModel.currentTrack.collectAsState()
-    //val playerList by viewModel.playerListState.collectAsState()
+    val userPlaylistResponses by viewModel.userPlaylistResponsesState.collectAsState()
+    val nextUserPlaylistId by viewModel.nextUserPlaylistId.collectAsState()
+    var expanded by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var newPlaylistName by remember { mutableStateOf("") }
 
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -72,6 +87,7 @@ fun MusicPlayerScreen(
     LaunchedEffect(startIndex, playerTrackList) {
         viewModel.getDownloads(playerTrackList[startIndex].trackId)
         viewModel.load(startIndex, playerTrackList)
+        viewModel.getUserPlaylistResponses(userId)
         viewModel.play()
     }
 
@@ -145,14 +161,126 @@ fun MusicPlayerScreen(
                     )
                 }
 
-                IconButton(onClick = { }) {
-                    Icon(
-                        Icons.Default.AddCircle,
-                        contentDescription = "Add",
-                        modifier = Modifier.size(32.dp)
-                    )
+                Box{
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(
+                            Icons.Default.AddCircle,
+                            contentDescription = "Add",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier
+                            .background(color = Color.LightGray)
+                            .fillMaxHeight(0.5f)
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Add New",
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 4.dp)
+                                    )
+                                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                                }
+                            },
+                            onClick = {
+                                showDialog = true
+                                expanded = false
+                            }
+                        )
+                        userPlaylistResponses.forEach { userPlaylistResponse ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(text = userPlaylistResponse.userPlaylistName)
+                                },
+                                onClick = {
+                                    currentTrack?.let {
+                                        val userPlaylistTrack = UserPlaylistTrack(
+                                            0,
+                                            userId,
+                                            userPlaylistResponse.userPlaylistId,
+                                            userPlaylistResponse.userPlaylistName,
+                                            currentTrack!!.trackId,
+                                            currentTrack!!.trackPreview,
+                                            currentTrack!!.trackTitle,
+                                            currentTrack!!.trackImage,
+                                            currentTrack!!.trackArtistName
+                                        )
+                                        viewModel.insertTrackToUserPlaylist(userPlaylistTrack)
+                                        expanded = false
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    if (showDialog) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showDialog = false
+                                expanded = true
+                            },
+                            title = { Text(text = "Add New Playlist") },
+                            text = {
+                                Column {
+                                    TextField(
+                                        value = newPlaylistName,
+                                        onValueChange = { newPlaylistName = it },
+                                        label = { Text("Playlist Name") }
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        currentTrack?.let {
+                                            val userPlaylistTrack = UserPlaylistTrack(
+                                                0,
+                                                userId,
+                                                nextUserPlaylistId,
+                                                newPlaylistName,
+                                                currentTrack!!.trackId,
+                                                currentTrack!!.trackPreview,
+                                                currentTrack!!.trackTitle,
+                                                currentTrack!!.trackImage,
+                                                currentTrack!!.trackArtistName
+                                            )
+                                            viewModel.insertTrackToNewUserPlaylist(userPlaylistTrack)
+                                            showDialog = false
+                                            newPlaylistName = ""
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Black
+                                    )
+                                ) {
+                                    Text("OK")
+                                }
+                            },
+                            dismissButton = {
+                                Button(
+                                    onClick = {
+                                        showDialog = false
+                                        expanded = true
+                                        newPlaylistName = ""
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Black
+                                    )
+                                ) {
+                                    Text("Cancel")
+                                }
+                            }
+                        )
+                    }
                 }
-            }
+                }
 
             Spacer(modifier = Modifier.height(16.dp))
 
