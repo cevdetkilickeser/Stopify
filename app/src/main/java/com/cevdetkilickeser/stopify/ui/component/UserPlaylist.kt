@@ -25,9 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 
 @Composable
@@ -57,7 +59,11 @@ fun UserPlaylistItem(userPlaylistTrack: UserPlaylistTrack, onClick: (UserPlaylis
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = rememberAsyncImagePainter(userPlaylistTrack.trackImage),
+                painter = rememberAsyncImagePainter(
+                    model = userPlaylistTrack.trackImage,
+                    error = painterResource(id = R.drawable.ic_play),
+                    fallback = painterResource(id = R.drawable.ic_play)
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(56.dp)

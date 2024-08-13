@@ -109,7 +109,11 @@ fun MusicPlayerScreen(
                 verticalArrangement = Arrangement.Top
             ) {
                 Image(
-                    painter = rememberAsyncImagePainter(currentTrack!!.trackImage),
+                    painter = rememberAsyncImagePainter(
+                        model = currentTrack!!.trackImage,
+                        error = painterResource(id = R.drawable.ic_play),
+                        fallback = painterResource(id = R.drawable.ic_play)
+                    ),
                     contentDescription = "Track Image",
                     modifier = Modifier.size(300.dp)
                 )

@@ -13,10 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.AlbumTrackList
@@ -54,7 +56,11 @@ fun AlbumScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
 
                 Image(
-                    painter = rememberAsyncImagePainter(album?.cover),
+                    painter = rememberAsyncImagePainter(
+                        model = album?.cover,
+                        error = painterResource(id = R.drawable.ic_play),
+                        fallback = painterResource(id = R.drawable.ic_play)
+                    ),
                     contentDescription = "Album Image",
                     modifier = Modifier
                         .size(200.dp)

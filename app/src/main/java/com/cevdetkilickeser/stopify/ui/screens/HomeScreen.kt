@@ -24,10 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.genre.GenreData
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
@@ -83,7 +85,11 @@ fun GenreCard(genreData: GenreData, navController: NavController) {
             modifier = Modifier.fillMaxSize().background(color = Color.LightGray)
         ) {
             Image(
-                painter = rememberAsyncImagePainter(genreData.picture),
+                painter = rememberAsyncImagePainter(
+                    model = genreData.picture,
+                    error = painterResource(id = R.drawable.ic_play),
+                    fallback = painterResource(id = R.drawable.ic_play)
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()

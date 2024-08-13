@@ -14,10 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.ui.component.ArtistAlbumList
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
@@ -46,7 +48,11 @@ fun ArtistScreen(
             Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
 
                 Image(
-                    painter = rememberAsyncImagePainter(artist?.pictureXl),
+                    painter = rememberAsyncImagePainter(
+                        model = artist?.pictureXl,
+                        error = painterResource(id = R.drawable.ic_play),
+                        fallback = painterResource(id = R.drawable.ic_play)
+                    ),
                     contentDescription = "Artist Image",
                     modifier = Modifier
                         .size(200.dp)

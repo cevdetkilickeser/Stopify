@@ -23,12 +23,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
@@ -87,7 +89,11 @@ fun SingleGenreRow(genreName: String, singleGenreData: SingleGenreData, navContr
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = rememberAsyncImagePainter(singleGenreData.picture),
+            painter = rememberAsyncImagePainter(
+                model = singleGenreData.picture,
+                error = painterResource(id = R.drawable.ic_play),
+                fallback = painterResource(id = R.drawable.ic_play)
+            ),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.size(56.dp)

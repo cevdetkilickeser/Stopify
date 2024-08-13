@@ -18,8 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.search.ArtistData
 
 
@@ -45,7 +47,11 @@ fun ArtistItem(artist: ArtistData, onArtistClick: (ArtistData) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = rememberAsyncImagePainter(artist.picture),
+            painter = rememberAsyncImagePainter(
+                artist.picture,
+                error = painterResource(id = R.drawable.ic_play),
+                fallback = painterResource(id = R.drawable.ic_play)
+            ),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.size(64.dp)
