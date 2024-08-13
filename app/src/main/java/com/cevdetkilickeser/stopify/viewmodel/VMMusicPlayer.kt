@@ -10,7 +10,6 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -31,7 +30,7 @@ import javax.inject.Inject
 
 @UnstableApi
 @HiltViewModel
-class VMMusicPlayer @Inject constructor(application: Application, private val downloadRepository: DownloadRepository, private val userPlaylistRepository: UserPlaylistRepository, private val savedStateHandle: SavedStateHandle
+class VMMusicPlayer @Inject constructor(application: Application, private val downloadRepository: DownloadRepository, private val userPlaylistRepository: UserPlaylistRepository
 ) : AndroidViewModel(application) {
 
     private val downloadManager = application.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -51,7 +50,6 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     val duration: StateFlow<Long> = _duration
 
     private val _playerListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
-    //val playerListState: StateFlow<List<PlayerTrack>> = _playerListState
 
     private val _currentTrack = MutableStateFlow<PlayerTrack?>(null)
     val currentTrack: StateFlow<PlayerTrack?> = _currentTrack
@@ -68,9 +66,6 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     val nextUserPlaylistId: StateFlow<Int> = _nextUserPlaylistId
 
     init {
-        val savedPosition = savedStateHandle.get<Long>("currentPosition") ?: 0L
-        _player.seekTo(savedPosition)
-
         _player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 val url = mediaItem?.localConfiguration?.uri.toString()
@@ -89,13 +84,8 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
                         _isPlaying.value = false
                         _currentPosition.value = 0L
                     }
-                    Player.STATE_BUFFERING -> {
-
-                    }
-
-                    Player.STATE_IDLE -> {
-
-                    }
+                    Player.STATE_BUFFERING -> {}
+                    Player.STATE_IDLE -> {}
                 }
             }
         })
@@ -193,7 +183,6 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
 
     override fun onCleared() {
         super.onCleared()
-        savedStateHandle["currentPosition"] = _currentPosition.value
         _player.release()
     }
 
