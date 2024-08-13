@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
@@ -34,6 +35,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,6 +79,7 @@ fun MusicPlayerScreen(
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var newPlaylistName by remember { mutableStateOf("") }
+    var addedTrack by remember { mutableStateOf(currentTrack)}
 
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -91,324 +94,340 @@ fun MusicPlayerScreen(
         viewModel.play()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.White),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
-    ) {
+    currentTrack?.let {
         Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color.White),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(currentTrack?.trackImage),
-                contentDescription = "Track Image",
-                modifier = Modifier.size(300.dp)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(currentTrack!!.trackImage),
+                    contentDescription = "Track Image",
+                    modifier = Modifier.size(300.dp)
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = currentTrack!!.trackTitle,
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = currentTrack!!.trackArtistName,
+                    style = MaterialTheme.typography.labelLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = currentTrack?.trackTitle ?: "Title",
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = currentTrack?.trackArtistName ?: "Artist Name",
-                style = MaterialTheme.typography.labelLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
             ) {
-                IconButton(onClick = {
-                    currentTrack?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(onClick = {
                         if (!isDownload) { viewModel.downloadSong(it) }
-                    }
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_download),
-                        contentDescription = "Download",
-                        tint = if (isDownload) {
-                            Color.Green
-                        } else {
-                            Color.Black
-                        },
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-
-                Box{
-                    IconButton(onClick = { expanded = true }) {
+                    }) {
                         Icon(
-                            Icons.Default.AddCircle,
-                            contentDescription = "Add",
+                            painter = painterResource(id = R.drawable.ic_download),
+                            contentDescription = "Download",
+                            tint = if (isDownload) {
+                                Color.Green
+                            } else {
+                                Color.Black
+                            },
                             modifier = Modifier.size(32.dp)
                         )
                     }
 
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier
-                            .background(color = Color.LightGray)
-                            .fillMaxHeight(0.5f)
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Add New",
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 4.dp)
-                                    )
-                                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                                }
-                            },
+                    Box{
+                        IconButton(
                             onClick = {
-                                showDialog = true
-                                expanded = false
+                                expanded = true
+                                addedTrack = currentTrack
                             }
-                        )
-                        userPlaylistResponses.forEach { userPlaylistResponse ->
+                        ) {
+                            Icon(
+                                Icons.Default.AddCircle,
+                                contentDescription = "Add",
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = if (userPlaylistResponses.size < 10 ) {
+                                Modifier
+                                    .background(color = Color.LightGray)
+                            } else {
+                                Modifier
+                                    .background(color = Color.LightGray)
+                                    .fillMaxHeight(0.5f)
+                            }
+                        ) {
                             DropdownMenuItem(
                                 text = {
-                                    Text(text = userPlaylistResponse.userPlaylistName)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Add New",
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(horizontal = 4.dp)
+                                        )
+                                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                                    }
                                 },
                                 onClick = {
-                                    currentTrack?.let {
+                                    showDialog = true
+                                    expanded = false
+                                }
+                            )
+                            userPlaylistResponses.forEach { userPlaylistResponse ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(text = userPlaylistResponse.userPlaylistName)
+                                    },
+                                    onClick = {
                                         val userPlaylistTrack = UserPlaylistTrack(
                                             0,
                                             userId,
                                             userPlaylistResponse.userPlaylistId,
                                             userPlaylistResponse.userPlaylistName,
-                                            currentTrack!!.trackId,
-                                            currentTrack!!.trackPreview,
-                                            currentTrack!!.trackTitle,
-                                            currentTrack!!.trackImage,
-                                            currentTrack!!.trackArtistName
+                                            addedTrack!!.trackId,
+                                            addedTrack!!.trackPreview,
+                                            addedTrack!!.trackTitle,
+                                            addedTrack!!.trackImage,
+                                            addedTrack!!.trackArtistName
                                         )
                                         viewModel.insertTrackToUserPlaylist(userPlaylistTrack)
                                         expanded = false
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
-                    }
-                    if (showDialog) {
-                        AlertDialog(
-                            onDismissRequest = {
-                                showDialog = false
-                                expanded = true
-                            },
-                            title = { Text(text = "Add New Playlist") },
-                            text = {
-                                Column {
-                                    TextField(
-                                        value = newPlaylistName,
-                                        onValueChange = { newPlaylistName = it },
-                                        label = { Text("Playlist Name") }
-                                    )
-                                }
-                            },
-                            confirmButton = {
-                                Button(
-                                    onClick = {
-                                        currentTrack?.let {
+                        if (showDialog) {
+                            AlertDialog(
+                                containerColor = Color.White,
+                                onDismissRequest = {
+                                    showDialog = false
+                                    expanded = true
+                                },
+                                title = { Text(text = "Add New Playlist") },
+                                text = {
+                                    Column {
+                                        TextField(
+                                            value = newPlaylistName,
+                                            onValueChange = { newPlaylistName = it },
+                                            label = { Text("Playlist Name") },
+                                            colors = TextFieldDefaults.colors(
+                                                cursorColor = Color.Black,
+                                                focusedLabelColor = Color.Gray,
+                                                unfocusedLabelColor = Color.Gray,
+                                                focusedContainerColor = Color.White,
+                                                unfocusedContainerColor = Color.White,
+                                                focusedSuffixColor = Color.Black,
+                                                selectionColors = TextSelectionColors(Color.Black, Color.Gray),
+                                                focusedIndicatorColor = Color.Black
+                                            )
+                                        )
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
                                             val userPlaylistTrack = UserPlaylistTrack(
                                                 0,
                                                 userId,
                                                 nextUserPlaylistId,
                                                 newPlaylistName,
-                                                currentTrack!!.trackId,
-                                                currentTrack!!.trackPreview,
-                                                currentTrack!!.trackTitle,
-                                                currentTrack!!.trackImage,
-                                                currentTrack!!.trackArtistName
+                                                addedTrack!!.trackId,
+                                                addedTrack!!.trackPreview,
+                                                addedTrack!!.trackTitle,
+                                                addedTrack!!.trackImage,
+                                                addedTrack!!.trackArtistName
                                             )
                                             viewModel.insertTrackToNewUserPlaylist(userPlaylistTrack)
                                             showDialog = false
                                             newPlaylistName = ""
-                                        }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.Black
-                                    )
-                                ) {
-                                    Text("OK")
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color.Black
+                                        )
+                                    ) {
+                                        Text("OK")
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(
+                                        onClick = {
+                                            showDialog = false
+                                            expanded = true
+                                            newPlaylistName = ""
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color.Black
+                                        )
+                                    ) {
+                                        Text("Cancel")
+                                    }
                                 }
-                            },
-                            dismissButton = {
-                                Button(
-                                    onClick = {
-                                        showDialog = false
-                                        expanded = true
-                                        newPlaylistName = ""
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.Black
-                                    )
-                                ) {
-                                    Text("Cancel")
-                                }
-                            }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Slider(
+                    value = sliderPosition,
+                    onValueChange = { newValue ->
+                        viewModel.seekTo(newValue.toLong() * 1000)
+                    },
+                    valueRange = 0f..sliderDuration,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.Black,
+                        inactiveTrackColor = Color.Gray,
+                        activeTrackColor = Color.Black
+                    ),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = formatTime(currentPosition))
+                    Text(text = formatTime(duration))
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(onClick = { viewModel.previousSong() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_skip_previous),
+                            contentDescription = "Previous",
+                            modifier = Modifier.size(200.dp)
+                        )
+                    }
+                    IconButton(onClick = { viewModel.rewind() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_backward_10),
+                            contentDescription = "Rewind 10s",
+                            modifier = Modifier.size(200.dp)
+                        )
+                    }
+                    IconButton(onClick = { if (isPlaying) viewModel.pause() else viewModel.play() }) {
+                        Icon(
+                            painter = if (isPlaying) painterResource(id = R.drawable.ic_pause) else painterResource(
+                                id = R.drawable.ic_play
+                            ),
+                            contentDescription = "Play/Pause",
+                            modifier = Modifier.size(200.dp)
+                        )
+                    }
+                    IconButton(onClick = { viewModel.fastForward() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_forward_10),
+                            contentDescription = "Forward 10s",
+                            modifier = Modifier.size(200.dp)
+                        )
+                    }
+                    IconButton(onClick = { viewModel.nextSong() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_skip_next),
+                            contentDescription = "Next",
+                            modifier = Modifier.size(200.dp)
                         )
                     }
                 }
-                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Slider(
-                value = sliderPosition,
-                onValueChange = { newValue ->
-                    viewModel.seekTo(newValue.toLong() * 1000)
-                },
-                valueRange = 0f..sliderDuration,
-                colors = SliderDefaults.colors(
-                    thumbColor = Color.Black,
-                    inactiveTrackColor = Color.Gray,
-                    activeTrackColor = Color.Black
-                ),
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = formatTime(currentPosition))
-                Text(text = formatTime(duration))
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                IconButton(onClick = { viewModel.previousSong() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_skip_previous),
-                        contentDescription = "Previous",
-                        modifier = Modifier.size(200.dp)
-                    )
-                }
-                IconButton(onClick = { viewModel.rewind() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_backward_10),
-                        contentDescription = "Rewind 10s",
-                        modifier = Modifier.size(200.dp)
-                    )
-                }
-                IconButton(onClick = { if (isPlaying) viewModel.pause() else viewModel.play() }) {
-                    Icon(
-                        painter = if (isPlaying) painterResource(id = R.drawable.ic_pause) else painterResource(
-                            id = R.drawable.ic_play
-                        ),
-                        contentDescription = "Play/Pause",
-                        modifier = Modifier.size(200.dp)
-                    )
-                }
-                IconButton(onClick = { viewModel.fastForward() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_forward_10),
-                        contentDescription = "Forward 10s",
-                        modifier = Modifier.size(200.dp)
-                    )
-                }
-                IconButton(onClick = { viewModel.nextSong() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_skip_next),
-                        contentDescription = "Next",
-                        modifier = Modifier.size(200.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(onClick = {
-                    if (currentTrack != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(onClick = {
                         val shareLink = currentTrack!!.trackPreview
                         viewModel.share(shareLink, context)
+                    }) {
+                        Icon(
+                            Icons.Default.Share,
+                            contentDescription = "Share",
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
-                }) {
-                    Icon(
-                        Icons.Default.Share,
-                        contentDescription = "Share",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
 
-                IconButton(onClick = { showBottomSheet = true }) {
-                    Icon(
-                        Icons.Default.Menu,
-                        contentDescription = "Playlist",
-                        modifier = Modifier.size(32.dp)
-                    )
+                    IconButton(onClick = { showBottomSheet = true }) {
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = "Playlist",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
         }
-    }
-    if (showBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false },
-            sheetState = sheetState,
-            containerColor = Color.Gray,
-            modifier = Modifier.padding(top = 64.dp)
-        ) {
-            var currentTrackId by remember {
-                mutableStateOf(currentTrack?.trackId)
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState,
+                containerColor = Color.Gray,
+                modifier = Modifier.padding(top = 64.dp)
+            ) {
+                var currentTrackId by remember {
+                    mutableStateOf(currentTrack!!.trackId)
+                }
+                PlayerTrackList(
+                    playerList = playerTrackList,
+                    onClick = { playerTrack ->
+                        if (playerTrack.trackId == currentTrack!!.trackId) {
+                            if (isPlaying) {viewModel.pause()} else {viewModel.play()}
+                        } else {
+                            viewModel.seekTo(playerTrackList.indexOf(playerTrack), 0L)
+                        }
+                        currentTrackId = playerTrack.trackId
+                    },
+                    currentTrackId = currentTrackId
+                )
             }
-            PlayerTrackList(
-                playerList = playerTrackList,
-                onClick = { playerTrack ->
-                    if (playerTrack.trackId == currentTrack?.trackId) {
-                        if (isPlaying) {viewModel.pause()} else {viewModel.play()}
-                    } else {
-                        viewModel.seekTo(playerTrackList.indexOf(playerTrack), 0L)
-                    }
-                    currentTrackId = playerTrack.trackId
-                },
-                currentTrackId = currentTrackId!!
-            )
         }
     }
 }
+
 
 @SuppressLint("DefaultLocale")
 fun formatTime(milliseconds: Long): String {
