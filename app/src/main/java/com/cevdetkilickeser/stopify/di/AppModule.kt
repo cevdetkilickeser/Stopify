@@ -5,12 +5,14 @@ import com.cevdetkilickeser.stopify.repo.DownloadRepository
 import com.cevdetkilickeser.stopify.repo.HistoryRepository
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
+import com.cevdetkilickeser.stopify.repo.UserPlaylistRepository
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 import com.cevdetkilickeser.stopify.retrofit.ApiUtils
 import com.cevdetkilickeser.stopify.room.AppDatabase
 import com.cevdetkilickeser.stopify.room.DownloadDao
 import com.cevdetkilickeser.stopify.room.HistoryDao
 import com.cevdetkilickeser.stopify.room.LikeDao
+import com.cevdetkilickeser.stopify.room.UserPlaylistDao
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -49,6 +51,12 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun provideUserPlaylistRepository(userPlaylistDao: UserPlaylistDao): UserPlaylistRepository {
+        return UserPlaylistRepository(userPlaylistDao)
+    }
+
+    @Provides
+    @Singleton
     fun provideApiService(): ApiService {
         return ApiUtils.getApiService()
     }
@@ -69,6 +77,12 @@ class AppModule {
     @Singleton
     fun provideDownloadDao(@ApplicationContext context: Context): DownloadDao {
         return AppDatabase.getDatabase(context).getDownloadDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserPlaylistDao(@ApplicationContext context: Context): UserPlaylistDao {
+        return AppDatabase.getDatabase(context).getUserPlaylistDao()
     }
 
     @Provides

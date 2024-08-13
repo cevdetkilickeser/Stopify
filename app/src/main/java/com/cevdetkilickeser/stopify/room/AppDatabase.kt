@@ -7,13 +7,15 @@ import androidx.room.RoomDatabase
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 
-@Database(entities = [History::class, Like::class, Download::class], version = 1, exportSchema = false)
+@Database(entities = [History::class, Like::class, Download::class, UserPlaylistTrack::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getHistoryDao(): HistoryDao
     abstract fun getLikeDao(): LikeDao
     abstract fun getDownloadDao(): DownloadDao
+    abstract fun getUserPlaylistDao(): UserPlaylistDao
 
     companion object {
         @Volatile
