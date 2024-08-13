@@ -75,7 +75,7 @@ fun GenreCard(genreData: GenreData, navController: NavController) {
             .aspectRatio(1.5f)
             .padding(all = 2.dp)
             .clickable {
-                navController.navigate("single_genre/${genreData.id}")
+                navController.navigate("single_genre/${genreData.id}/${genreData.name}")
             },
         shape = RoundedCornerShape(8.dp)
     ) {

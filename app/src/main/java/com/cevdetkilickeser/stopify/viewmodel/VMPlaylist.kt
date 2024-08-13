@@ -36,9 +36,9 @@ class VMPlaylist @Inject constructor(
                 _trackListState.value = serviceRepository.getTrackList(playlistId)
                     .filter { track -> track.preview.isNotEmpty() }
                 _loadingState.value = false
-                _errorState.value = null
             } catch (e: Exception) {
-                _errorState.value = e.message
+                _errorState.value = "Ops... Something went wrong"
+                println(_trackListState.value)
             }
         }
     }

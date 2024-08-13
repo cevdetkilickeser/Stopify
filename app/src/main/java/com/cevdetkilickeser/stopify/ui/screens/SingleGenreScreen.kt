@@ -3,6 +3,7 @@ package com.cevdetkilickeser.stopify.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -32,7 +35,7 @@ import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMSingleGenre
 
 @Composable
-fun SingleGenreScreen(navController: NavController, genreId: String, viewModel: VMSingleGenre = hiltViewModel()) {
+fun SingleGenreScreen(navController: NavController, genreId: String, genreName: String, viewModel: VMSingleGenre = hiltViewModel()) {
 
     val singleGenreDataList by viewModel.state.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
@@ -46,7 +49,13 @@ fun SingleGenreScreen(navController: NavController, genreId: String, viewModel: 
         if (loadingState) {
             LoadingComponent()
         } else {
-            SingleGenreList(singleGenreDataList = singleGenreDataList, navController)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(text = genreName, fontSize = 24.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(8.dp))
+                SingleGenreList(genreName = genreName, singleGenreDataList = singleGenreDataList, navController =  navController)
+            }
         }
     } else {
         ErrorScreen(errorMessage = errorState!!)
@@ -54,26 +63,26 @@ fun SingleGenreScreen(navController: NavController, genreId: String, viewModel: 
 }
 
 @Composable
-fun SingleGenreList(singleGenreDataList: List<SingleGenreData>, navController: NavController) {
+fun SingleGenreList(genreName: String, singleGenreDataList: List<SingleGenreData>, navController: NavController) {
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .background(Color.White)
     ) {
         items(singleGenreDataList) { singleGenre ->
-            SingleGenreRow(singleGenreData = singleGenre, navController)
+            SingleGenreRow(genreName = genreName, singleGenreData = singleGenre, navController =  navController)
         }
     }
 }
 
 @Composable
-fun SingleGenreRow(singleGenreData: SingleGenreData, navController: NavController) {
+fun SingleGenreRow(genreName: String, singleGenreData: SingleGenreData, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
             .clickable {
-                navController.navigate("playlist/${singleGenreData.id}")
+                navController.navigate("playlist/$genreName/${singleGenreData.id}/${singleGenreData.title}")
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
