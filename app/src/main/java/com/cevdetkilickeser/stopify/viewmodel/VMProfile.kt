@@ -32,7 +32,7 @@ class VMProfile @Inject constructor(private val userPlaylistRepository: UserPlay
                 _loadingState.value = false
             }
         } catch (e: Exception) {
-            _errorState.value = e.message
+            _errorState.value = "Ops... Something went wrong"
         }
     }
 }

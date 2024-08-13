@@ -32,7 +32,7 @@ class VMHome @Inject constructor(private val repository: ServiceRepository) : Vi
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {
-                _errorState.value = e.message
+                _errorState.value = "Ops... Something went wrong"
             }
         }
     }

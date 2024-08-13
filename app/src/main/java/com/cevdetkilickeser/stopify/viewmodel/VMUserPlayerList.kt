@@ -28,7 +28,7 @@ class VMUserPlayerList @Inject constructor(private val userPlaylistRepository: U
                 _userPlaylistState.value = userPlaylistRepository.getUserPlaylist(userId, userPlaylistId)
                 _loadingState.value = false
             } catch (e:Exception) {
-                _errorState.value = e.message
+                _errorState.value = "Ops... Something went wrong"
             }
         }
     }

@@ -33,7 +33,7 @@ class VMArtist @Inject constructor(private val serviceRepository: ServiceReposit
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {
-                _errorState.value = e.message
+                _errorState.value = "Ops... Something went wrong"
             }
         }
     }
