@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.component
+package com.cevdetkilickeser.stopify.ui.component.search_screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,22 +23,23 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
-import com.cevdetkilickeser.stopify.data.model.artist.ArtistAlbumData
+import com.cevdetkilickeser.stopify.data.model.search.AlbumData
+
 
 @Composable
-fun ArtistAlbumList(albumList: List<ArtistAlbumData>, onAlbumClick: (ArtistAlbumData) -> Unit) {
+fun AlbumList(albumList: List<AlbumData>, onAlbumClick: (AlbumData) -> Unit) {
     LazyColumn(
         modifier = Modifier
-            .background(color = Color.White).fillMaxSize()
+            .background(color = Color.White)
     ) {
         items(albumList) { album ->
-            ArtistAlbumtItem(album = album, onAlbumClick = onAlbumClick)
+            AlbumtItem(album = album, onAlbumClick = onAlbumClick)
         }
     }
 }
 
 @Composable
-fun ArtistAlbumtItem(album: ArtistAlbumData, onAlbumClick: (ArtistAlbumData) -> Unit) {
+fun AlbumtItem(album: AlbumData, onAlbumClick: (AlbumData) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,6 +62,11 @@ fun ArtistAlbumtItem(album: ArtistAlbumData, onAlbumClick: (ArtistAlbumData) -> 
             Text(
                 text = album.title,
                 style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Text(
+                text = album.artist.name,
+                style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }

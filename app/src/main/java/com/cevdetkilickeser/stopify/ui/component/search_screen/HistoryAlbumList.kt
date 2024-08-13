@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.component
+package com.cevdetkilickeser.stopify.ui.component.search_screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,8 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,53 +25,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
-import com.cevdetkilickeser.stopify.data.entity.Like
-import com.cevdetkilickeser.stopify.data.model.playlist.Track
+import com.cevdetkilickeser.stopify.data.entity.History
+
 
 @Composable
-fun TrackList(
-    isSearch: Boolean,
-    trackList: List<Track>,
-    likeList: List<Like> = emptyList(),
-    onTrackClick: (Track) -> Unit,
-    onLikeClick: (Track, Boolean) -> Unit = { _, _ -> }
+fun HistoryAlbumList(
+    historyList: List<History>,
+    onHistoryClick: (History) -> Unit,
+    onDeleteHistoryClick: (History) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
             .background(color = Color.White)
     ) {
-        items(trackList) { track ->
-            if (track.preview.isNotEmpty()){
-                val isLike = likeList.any { it.trackId == track.id }
-                TrackItem(
-                    isSearch = isSearch,
-                    track = track,
-                    onTrackClick = onTrackClick,
-                    isLike = isLike,
-                    onLikeClick = onLikeClick
-                )
-            }
+        items(historyList) { history ->
+            HistoryAlbumItem(
+                history = history,
+                onHistoryClick = onHistoryClick,
+                onDeleteHistoryClick = onDeleteHistoryClick
+            )
         }
     }
 }
 
 @Composable
-fun TrackItem(
-    isSearch: Boolean,
-    track: Track,
-    isLike: Boolean,
-    onTrackClick: (Track) -> Unit,
-    onLikeClick: (Track, Boolean) -> Unit
+fun HistoryAlbumItem(
+    history: History,
+    onHistoryClick: (History) -> Unit,
+    onDeleteHistoryClick: (History) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .clickable { onTrackClick(track) },
+            .clickable { onHistoryClick(history) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -81,7 +70,7 @@ fun TrackItem(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = track.album.coverXl,
+                    model = history.albumImage,
                     error = painterResource(id = R.drawable.ic_play),
                     fallback = painterResource(id = R.drawable.ic_play)
                 ),
@@ -92,32 +81,21 @@ fun TrackItem(
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    text = track.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    text = history.albumTitle!!,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(horizontal = 8.dp).width(200.dp)
                 )
                 Text(
-                    text = track.artist.name,
+                    text = history.albumArtistName!!,
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
         }
-        if (!isSearch){
-            IconButton(onClick = { onLikeClick(track, isLike) }) {
-                Icon(
-                    imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .clickable {
-                            onLikeClick(track, isLike)
-                        }
-                )
-            }
+        IconButton(onClick = { onDeleteHistoryClick(history) }) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
         }
     }
 }

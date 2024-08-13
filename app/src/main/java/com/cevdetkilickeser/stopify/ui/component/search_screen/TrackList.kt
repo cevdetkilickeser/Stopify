@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.component
+package com.cevdetkilickeser.stopify.ui.component.search_screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,27 +31,48 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.model.playlist.Track
 
 @Composable
-fun LikeList(likeList: List<Like>, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) -> Unit) {
+fun TrackList(
+    isSearch: Boolean,
+    trackList: List<Track>,
+    likeList: List<Like> = emptyList(),
+    onTrackClick: (Track) -> Unit,
+    onLikeClick: (Track, Boolean) -> Unit = { _, _ -> }
+) {
     LazyColumn(
         modifier = Modifier
             .background(color = Color.White)
-            .fillMaxSize()
     ) {
-        items(likeList) { like ->
-            LikeItem(like = like, onLikeClick = onLikeClick, onDeleteLikeClick = onDeleteLikeClick)
+        items(trackList) { track ->
+            if (track.preview.isNotEmpty()){
+                val isLike = likeList.any { it.trackId == track.id }
+                TrackItem(
+                    isSearch = isSearch,
+                    track = track,
+                    onTrackClick = onTrackClick,
+                    isLike = isLike,
+                    onLikeClick = onLikeClick
+                )
+            }
         }
     }
 }
 
 @Composable
-fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) -> Unit) {
+fun TrackItem(
+    isSearch: Boolean,
+    track: Track,
+    isLike: Boolean,
+    onTrackClick: (Track) -> Unit,
+    onLikeClick: (Track, Boolean) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .clickable { onLikeClick(like) },
+            .clickable { onTrackClick(track) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -60,7 +81,7 @@ fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) 
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = like.trackImage,
+                    model = track.album.coverXl,
                     error = painterResource(id = R.drawable.ic_play),
                     fallback = painterResource(id = R.drawable.ic_play)
                 ),
@@ -71,24 +92,32 @@ fun LikeItem(like: Like, onLikeClick: (Like) -> Unit, onDeleteLikeClick: (Like) 
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    text = like.trackTitle,
+                    text = track.title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .width(200.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp).width(200.dp)
                 )
                 Text(
-                    text = like.trackArtistName,
+                    text = track.artist.name,
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
         }
-        IconButton(onClick = { onDeleteLikeClick(like) }) {
-            Icon(imageVector = Icons.Default.Favorite, contentDescription = null)
+        if (!isSearch){
+            IconButton(onClick = { onLikeClick(track, isLike) }) {
+                Icon(
+                    imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clickable {
+                            onLikeClick(track, isLike)
+                        }
+                )
+            }
         }
     }
 }

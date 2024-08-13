@@ -1,4 +1,4 @@
-package com.cevdetkilickeser.stopify.ui.component
+package com.cevdetkilickeser.stopify.ui.component.search_screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
