@@ -59,6 +59,7 @@ import com.cevdetkilickeser.stopify.ui.screens.ProfileScreen
 import com.cevdetkilickeser.stopify.ui.screens.SearchScreen
 import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
 import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
+import com.cevdetkilickeser.stopify.ui.screens.UserPlayerListScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -80,6 +81,7 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
     }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             MyTopAppBar(
                 currentDestination = currentDestination,
@@ -158,7 +160,7 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
                     LikesScreen(navController, userId!!)
                 }
                 composable("profile") {
-                    ProfileScreen(navController)
+                    ProfileScreen(navController, userId!!)
                 }
                 composable(
                     "single_genre/{genreId}",
@@ -205,10 +207,18 @@ fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor)
                         navBackStackEntry.arguments?.getString("player_track_list") ?: return@composable
                     val listType = object : TypeToken<List<PlayerTrack>>() {}.type
                     val playerTrackList = Gson().fromJson<List<PlayerTrack>>(playerTrackListGson, listType)
-                    MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList)
+                    MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList, userId = userId!!)
                 }
                 composable("downloads") {
                     DownloadsScreen(navController = navController, userId = userId!!)
+                }
+                composable(
+                    "user_playlist/{user_playlist_id}",
+                    arguments = listOf(navArgument("user_playlist_id") { type = NavType.IntType })
+                ) { navBackStackEntry ->
+                    val userPlaylistId =
+                        navBackStackEntry.arguments?.getInt("user_playlist_id") ?: return@composable
+                    UserPlayerListScreen(navController = navController, userId = userId!!, userPlayerlistId = userPlaylistId)
                 }
             }
         }
