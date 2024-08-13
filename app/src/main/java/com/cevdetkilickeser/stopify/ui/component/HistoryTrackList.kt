@@ -82,6 +82,7 @@ fun HistoryTrackItem(
                 Text(
                     text = history.trackArtistName!!,
                     style = MaterialTheme.typography.titleSmall,
+                    color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }

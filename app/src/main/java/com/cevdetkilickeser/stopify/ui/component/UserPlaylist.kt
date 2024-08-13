@@ -76,6 +76,7 @@ fun UserPlaylistItem(userPlaylistTrack: UserPlaylistTrack, onClick: (UserPlaylis
                 Text(
                     text = userPlaylistTrack.trackArtistName,
                     style = MaterialTheme.typography.titleSmall,
+                    color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }

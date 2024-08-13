@@ -83,6 +83,7 @@ fun HistoryAlbumItem(
                 Text(
                     text = history.albumArtistName!!,
                     style = MaterialTheme.typography.titleSmall,
+                    color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
