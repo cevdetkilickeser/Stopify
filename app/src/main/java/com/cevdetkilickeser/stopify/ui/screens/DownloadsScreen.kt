@@ -37,6 +37,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.convertStandardCharsets
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
@@ -62,7 +63,7 @@ fun DownloadsScreen(
         downloadList = downloadList,
         likeList = likeList,
         onClick = { download ->
-            val playerTrackList = downloadList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsets().replace("+"," "),it.fileUri!!.convertStandardCharsets(), it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsets().replace("+"," ")) }
+            val playerTrackList = downloadList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.fileUri!!.convertStandardCharsets(), it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
             val playerTrackListGson = Gson().toJson(playerTrackList)
             val playerTrack = playerTrackList.find { it.trackId == download.trackId }
             val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0

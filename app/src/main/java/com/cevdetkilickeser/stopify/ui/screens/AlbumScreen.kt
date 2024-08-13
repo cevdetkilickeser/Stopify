@@ -42,6 +42,7 @@ import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.convertStandardCharsets
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.album.TrackData
 import com.cevdetkilickeser.stopify.viewmodel.VMAlbum
 import com.google.gson.Gson
@@ -90,7 +91,7 @@ fun AlbumScreen(
                     trackList = trackList,
                     likeList = likeList,
                     onTrackClick = { track ->
-                        val playerTrackList = trackList.map { PlayerTrack(it.id,it.title.convertStandardCharsets().replace("+"," "),it.preview.convertStandardCharsets(),it.trackDataAlbum.coverXl.convertStandardCharsets(),it.trackDataArtist.name.convertStandardCharsets().replace("+"," ")) }
+                        val playerTrackList = trackList.map { PlayerTrack(it.id,it.title.convertStandardCharsetsReplacePlusWithSpace(),it.preview.convertStandardCharsets(),it.trackDataAlbum.coverXl.convertStandardCharsets(),it.trackDataArtist.name.convertStandardCharsetsReplacePlusWithSpace()) }
                         val playerTrackListGson = Gson().toJson(playerTrackList)
                         val playerTrack = playerTrackList.find { it.trackId == track.id }
                         val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0

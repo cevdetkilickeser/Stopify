@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.genre.GenreData
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
@@ -45,7 +46,9 @@ fun HomeScreen(navController: NavController, viewModel: VMHome = hiltViewModel()
         if (loadingState) {
             LoadingComponent()
         } else {
-            GenreGrid(genreDataList = genreDataList, navController)
+            GenreGrid(genreDataList = genreDataList, onClick = { genreData ->
+                navController.navigate("single_genre/${genreData.id}/${genreData.name.convertStandardCharsetsReplacePlusWithSpace()}")
+            })
         }
     } else {
         ErrorScreen(errorMessage = errorState!!)
@@ -53,7 +56,7 @@ fun HomeScreen(navController: NavController, viewModel: VMHome = hiltViewModel()
 }
 
 @Composable
-fun GenreGrid(genreDataList: List<GenreData>, navController: NavController) {
+fun GenreGrid(genreDataList: List<GenreData>, onClick: (GenreData) ->  Unit) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier
@@ -64,20 +67,20 @@ fun GenreGrid(genreDataList: List<GenreData>, navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(genreDataList) { genre ->
-            GenreCard(genreData = genre, navController)
+            GenreCard(genreData = genre, onClick)
         }
     }
 }
 
 @Composable
-fun GenreCard(genreData: GenreData, navController: NavController) {
+fun GenreCard(genreData: GenreData, onClick: (GenreData) ->  Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1.5f)
             .padding(all = 2.dp)
             .clickable {
-                navController.navigate("single_genre/${genreData.id}/${genreData.name}")
+                onClick(genreData)
             },
         shape = RoundedCornerShape(8.dp)
     ) {

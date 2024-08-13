@@ -10,6 +10,10 @@ fun String.convertStandardCharsets(): String {
     return URLEncoder.encode(this, StandardCharsets.UTF_8.name())
 }
 
+fun String.convertStandardCharsetsReplacePlusWithSpace(): String {
+    return URLEncoder.encode(this, StandardCharsets.UTF_8.name()).replace("+"," ")
+}
+
 fun isInternetAvailable(context: Context): Boolean {
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val network = connectivityManager.activeNetwork ?: return false

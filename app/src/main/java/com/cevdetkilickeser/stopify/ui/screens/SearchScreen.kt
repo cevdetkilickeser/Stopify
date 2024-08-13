@@ -42,6 +42,7 @@ import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryArtistList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryTrackList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.TrackList
 import com.cevdetkilickeser.stopify.convertStandardCharsets
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
@@ -110,7 +111,7 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                 "Track" -> HistoryTrackList(
                     historyList = historyTrackList,
                     onHistoryClick = { history ->
-                        val playerTrackList = listOf(PlayerTrack(history.trackId!!, history.trackTitle!!.convertStandardCharsets().replace("+"," "), history.trackPreview!!.convertStandardCharsets(), history.trackImage!!.convertStandardCharsets(), history.trackArtistName!!.convertStandardCharsets().replace("+"," ")))
+                        val playerTrackList = listOf(PlayerTrack(history.trackId!!, history.trackTitle!!.convertStandardCharsetsReplacePlusWithSpace(), history.trackPreview!!.convertStandardCharsets(), history.trackImage!!.convertStandardCharsets(), history.trackArtistName!!.convertStandardCharsetsReplacePlusWithSpace()))
                         val playerTrackListGson = Gson().toJson(playerTrackList)
                         val playerTrack = playerTrackList.find { it.trackId == history.trackId }
                         val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
@@ -152,7 +153,7 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                             )
                         )
                     }
-                    val playerTrackList = listOf(PlayerTrack(track.id, track.title.convertStandardCharsets().replace("+"," "), track.preview.convertStandardCharsets() ,track.album.coverXl.convertStandardCharsets() ,track.artist.name.convertStandardCharsets().replace("+"," ")))
+                    val playerTrackList = listOf(PlayerTrack(track.id, track.title.convertStandardCharsetsReplacePlusWithSpace(), track.preview.convertStandardCharsets() ,track.album.coverXl.convertStandardCharsets() ,track.artist.name.convertStandardCharsetsReplacePlusWithSpace()))
                     val playerTrackListGson = Gson().toJson(playerTrackList)
                     val playerTrack = playerTrackList.find { it.trackId == track.id }
                     val startIndex = playerTrack.let { playerTrackList.indexOf(it) }
