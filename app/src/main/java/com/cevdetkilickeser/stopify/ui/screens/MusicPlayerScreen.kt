@@ -88,10 +88,12 @@ fun MusicPlayerScreen(
     val sliderDuration = (duration / 1000).toFloat()
 
     LaunchedEffect(startIndex, playerTrackList) {
-        viewModel.getDownloads(playerTrackList[startIndex].trackId)
-        viewModel.load(startIndex, playerTrackList)
-        viewModel.getUserPlaylistResponses(userId)
-        viewModel.play()
+        if (currentTrack == null) {
+            viewModel.getDownloads(playerTrackList[startIndex].trackId)
+            viewModel.load(startIndex, playerTrackList)
+            viewModel.getUserPlaylistResponses(userId)
+            viewModel.play()
+        }
     }
 
     currentTrack?.let {
