@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMUserPlayerList @Inject constructor(private val userPlaylistRepository: UserPlaylistRepository): ViewModel() {
+class VMUserPlaylist @Inject constructor(private val userPlaylistRepository: UserPlaylistRepository): ViewModel() {
 
     private val _userPlaylistState = MutableStateFlow<List<UserPlaylistTrack>>(emptyList())
     val userPlaylistState: StateFlow<List<UserPlaylistTrack>> = _userPlaylistState

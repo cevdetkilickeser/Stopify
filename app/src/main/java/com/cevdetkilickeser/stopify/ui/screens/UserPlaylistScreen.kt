@@ -39,16 +39,16 @@ import com.cevdetkilickeser.stopify.convertStandardCharsets
 import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
-import com.cevdetkilickeser.stopify.viewmodel.VMUserPlayerList
+import com.cevdetkilickeser.stopify.viewmodel.VMUserPlaylist
 import com.google.gson.Gson
 
 @Composable
-fun UserPlayerListScreen(navController: NavController, userId: String, userPlayerlistId:Int, viewModel: VMUserPlayerList = hiltViewModel()) {
+fun UserPlayListScreen(navController: NavController, userId: String, userPlaylistId:Int, viewModel: VMUserPlaylist = hiltViewModel()) {
 
     val userPlaylist by viewModel.userPlaylistState.collectAsState()
 
-    LaunchedEffect(userId, userPlayerlistId) {
-        viewModel.getUserPlaylist(userId, userPlayerlistId)
+    LaunchedEffect(userId, userPlaylistId) {
+        viewModel.getUserPlaylist(userId, userPlaylistId)
     }
 
     UserPlaylist(

@@ -51,7 +51,7 @@ import com.cevdetkilickeser.stopify.ui.screens.ProfileScreen
 import com.cevdetkilickeser.stopify.ui.screens.SearchScreen
 import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
 import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
-import com.cevdetkilickeser.stopify.ui.screens.UserPlayerListScreen
+import com.cevdetkilickeser.stopify.ui.screens.UserPlayListScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -319,7 +319,7 @@ fun MyNavHost(navController: NavHostController, userId: String?, innerPadding: P
         ) { navBackStackEntry ->
             val userPlaylistId =
                 navBackStackEntry.arguments?.getInt("user_playlist_id") ?: return@composable
-            UserPlayerListScreen(navController = navController, userId = userId!!, userPlayerlistId = userPlaylistId)
+            UserPlayListScreen(navController = navController, userId = userId!!, userPlaylistId = userPlaylistId)
         }
     }
 }
