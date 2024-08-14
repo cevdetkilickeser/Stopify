@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -52,16 +53,16 @@ import com.cevdetkilickeser.stopify.ui.screens.SearchScreen
 import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
 import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
 import com.cevdetkilickeser.stopify.ui.screens.UserPlayListScreen
-import com.google.firebase.auth.FirebaseAuth
+import com.cevdetkilickeser.stopify.viewmodel.VMMain
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 @Composable
-fun MainScreen(navController: NavHostController) {
+fun MainScreen (navController: NavHostController, viewModel: VMMain = hiltViewModel()) {
     val activity = LocalContext.current as? Activity
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStackEntry?.destination?.route
-    val userId: String? = FirebaseAuth.getInstance().currentUser?.email
+    val userId: String? = viewModel.auth.currentUser?.email
 
     Scaffold(
         containerColor = Color.White,
