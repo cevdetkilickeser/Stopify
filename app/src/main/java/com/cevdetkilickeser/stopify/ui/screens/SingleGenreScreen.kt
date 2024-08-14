@@ -35,43 +35,62 @@ import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
+import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.viewmodel.VMSingleGenre
 
 @Composable
-fun SingleGenreScreen(navController: NavController, genreId: String, genreName: String, viewModel: VMSingleGenre = hiltViewModel()) {
+fun SingleGenreScreen(
+    navController: NavController,
+    genreId: String,
+    genreName: String,
+    viewModel: VMSingleGenre = hiltViewModel()
+) {
 
     val singleGenreDataList by viewModel.state.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
+    val isConnected by viewModel.isConnected.collectAsState()
 
-    LaunchedEffect(key1 = genreId) {
+    LaunchedEffect(isConnected, genreId) {
         viewModel.getSingleGenreDataList(genreId)
     }
 
-    if (errorState.isNullOrEmpty()) {
-        if (loadingState) {
-            LoadingComponent()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = genreName,
+            fontSize = 24.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(8.dp)
+        )
+        if (!isConnected) {
+            OfflineInfo(onClick = { navController.navigate("downloads") })
         } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Text(text = genreName, fontSize = 24.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(8.dp))
-                SingleGenreList(
-                    singleGenreDataList = singleGenreDataList,
-                    onClick = { singleGenreData ->
-                        navController.navigate("playlist/${genreName.convertStandardCharsetsReplacePlusWithSpace()}/${singleGenreData.id}/${singleGenreData.title.convertStandardCharsetsReplacePlusWithSpace()}")
-                    }
-                )
+            if (errorState.isNullOrEmpty()) {
+                if (loadingState) {
+                    LoadingComponent()
+                } else {
+                    SingleGenreList(
+                        singleGenreDataList = singleGenreDataList,
+                        onClick = { singleGenreData ->
+                            navController.navigate("playlist/${genreName.convertStandardCharsetsReplacePlusWithSpace()}/${singleGenreData.id}/${singleGenreData.title.convertStandardCharsetsReplacePlusWithSpace()}")
+                        }
+                    )
+                }
+            } else {
+                ErrorScreen(errorMessage = errorState!!)
             }
         }
-    } else {
-        ErrorScreen(errorMessage = errorState!!)
     }
 }
 
 @Composable
-fun SingleGenreList(singleGenreDataList: List<SingleGenreData>, onClick: (SingleGenreData) -> Unit) {
+fun SingleGenreList(
+    singleGenreDataList: List<SingleGenreData>,
+    onClick: (SingleGenreData) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -106,6 +125,7 @@ fun SingleGenreRow(singleGenreData: SingleGenreData, onClick: (SingleGenreData) 
         Text(
             text = singleGenreData.title,
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 8.dp))
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
     }
 }

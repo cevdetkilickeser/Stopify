@@ -1,9 +1,12 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.playlist.Track
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,9 +17,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VMPlaylist @Inject constructor(
+    application: Application,
     private val serviceRepository: ServiceRepository,
-    private val likeRepository: LikeRepository
-) : ViewModel() {
+    private val likeRepository: LikeRepository,
+    private val networkMonitor: NetworkMonitor
+) : AndroidViewModel(application) {
 
     private val _trackListState = MutableStateFlow<List<Track>>(emptyList())
     val trackListState: StateFlow<List<Track>> = _trackListState
@@ -30,9 +35,21 @@ class VMPlaylist @Inject constructor(
     private val _errorState = MutableStateFlow<String?>(null)
     val errorState: StateFlow<String?> = _errorState
 
+    private val _isConnected = MutableStateFlow(isInternetAvailable(application))
+    val isConnected: StateFlow<Boolean> = _isConnected
+
+    init {
+        networkMonitor.startNetworkCallback()
+        networkMonitor.onNetworkStatusChanged = { isConnected ->
+            _errorState.value = null
+            _isConnected.value = isConnected
+        }
+    }
+
     fun getPlaylistDataList(playlistId: String) {
         viewModelScope.launch {
             try {
+                _loadingState.value = true
                 _trackListState.value = serviceRepository.getTrackList(playlistId)
                     .filter { track -> track.preview.isNotEmpty() }
                 _loadingState.value = false
@@ -61,5 +78,10 @@ class VMPlaylist @Inject constructor(
             likeRepository.deleteLikeByTrackId(userId, trackId)
             getLikes(userId)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        networkMonitor.stopNetworkCallback()
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,24 +35,34 @@ import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.genre.GenreData
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
+import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.viewmodel.VMHome
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: VMHome = hiltViewModel()) {
-    val genreDataList by viewModel.state.collectAsState()
+    val genreDataList by viewModel.genreDataState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
+    val isConnected by viewModel.isConnected.collectAsState()
 
-    if (errorState.isNullOrEmpty()) {
-        if (loadingState) {
-            LoadingComponent()
-        } else {
-            GenreGrid(genreDataList = genreDataList, onClick = { genreData ->
-                navController.navigate("single_genre/${genreData.id}/${genreData.name.convertStandardCharsetsReplacePlusWithSpace()}")
-            })
-        }
+    LaunchedEffect(isConnected) {
+        viewModel.getGenreDataList()
+    }
+
+    if (!isConnected) {
+        OfflineInfo(onClick = { navController.navigate("downloads")})
     } else {
-        ErrorScreen(errorMessage = errorState!!)
+        if (errorState.isNullOrEmpty()) {
+            if (loadingState) {
+                LoadingComponent()
+            } else {
+                GenreGrid(genreDataList = genreDataList, onClick = { genreData ->
+                    navController.navigate("single_genre/${genreData.id}/${genreData.name.convertStandardCharsetsReplacePlusWithSpace()}")
+                })
+            }
+        } else {
+            ErrorScreen(errorMessage = errorState!!)
+        }
     }
 }
 
@@ -85,7 +96,9 @@ fun GenreCard(genreData: GenreData, onClick: (GenreData) ->  Unit) {
         shape = RoundedCornerShape(8.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize().background(color = Color.LightGray)
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color.LightGray)
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
