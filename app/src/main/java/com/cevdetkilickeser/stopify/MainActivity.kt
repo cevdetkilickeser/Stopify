@@ -16,13 +16,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private lateinit var networkMonitor: NetworkMonitor
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
-        networkMonitor = NetworkMonitor(this)
         setContent {
             StopifyTheme {
                 val statusBarColor = Color.Black
@@ -31,22 +27,9 @@ class MainActivity : ComponentActivity() {
                     window.statusBarColor = statusBarColor.toArgb()
                 }
                 val navController = rememberNavController()
-                MainScreen(navController, networkMonitor)
+                MainScreen(navController)
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        networkMonitor.startNetworkCallback(
-            onNetworkAvailable = {  },
-            onNetworkLost = {  }
-        )
-    }
-
-    override fun onPause() {
-        super.onPause()
-        networkMonitor.stopNetworkCallback()
     }
 }
 

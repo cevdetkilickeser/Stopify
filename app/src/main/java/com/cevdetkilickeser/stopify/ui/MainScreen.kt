@@ -22,11 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,10 +37,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
-import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
-import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.ui.screens.AlbumScreen
 import com.cevdetkilickeser.stopify.ui.screens.ArtistScreen
 import com.cevdetkilickeser.stopify.ui.screens.DownloadsScreen
@@ -61,20 +57,11 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 @Composable
-fun MainScreen(navController: NavHostController, networkMonitor: NetworkMonitor) {
-    val context = LocalContext.current
+fun MainScreen(navController: NavHostController) {
     val activity = LocalContext.current as? Activity
-    var isConnected by remember { mutableStateOf(isInternetAvailable(context)) }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStackEntry?.destination?.route
     val userId: String? = FirebaseAuth.getInstance().currentUser?.email
-
-    LaunchedEffect(Unit) {
-        networkMonitor.startNetworkCallback(
-            onNetworkAvailable = { isConnected = true },
-            onNetworkLost = { isConnected = false }
-        )
-    }
 
     Scaffold(
         containerColor = Color.White,
