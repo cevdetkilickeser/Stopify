@@ -137,7 +137,8 @@ class VMMusicPlayer @Inject constructor(
         val currentIndex = _player.currentMediaItemIndex
         if (currentIndex < _player.mediaItemCount - 1) {
             _player.seekTo(currentIndex + 1, 0L)
-            _player.play()
+            _currentPosition.value = 0L
+            play()
         }
     }
 
