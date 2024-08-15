@@ -1,7 +1,9 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.playlist.UserPlaylistResponse
 import com.cevdetkilickeser.stopify.repo.UserPlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,8 +13,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMProfile @Inject constructor(private val userPlaylistRepository: UserPlaylistRepository) :
-    ViewModel() {
+class VMProfile @Inject constructor(
+    application: Application,
+    private val userPlaylistRepository: UserPlaylistRepository
+): AndroidViewModel(application) {
 
     private val _userPlaylistResponsesState =
         MutableStateFlow<List<UserPlaylistResponse>>(emptyList())
@@ -32,7 +36,7 @@ class VMProfile @Inject constructor(private val userPlaylistRepository: UserPlay
                 _loadingState.value = false
             }
         } catch (e: Exception) {
-            _errorState.value = "Ops... Something went wrong"
+            _errorState.value = getApplication<Application>().getString(R.string.error)
         }
     }
 }

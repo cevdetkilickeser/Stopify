@@ -1,7 +1,9 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.repo.UserPlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +13,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMUserPlaylist @Inject constructor(private val userPlaylistRepository: UserPlaylistRepository): ViewModel() {
+class VMUserPlaylist @Inject constructor(
+    application: Application,
+    private val userPlaylistRepository: UserPlaylistRepository
+): AndroidViewModel(application) {
 
     private val _userPlaylistState = MutableStateFlow<List<UserPlaylistTrack>>(emptyList())
     val userPlaylistState: StateFlow<List<UserPlaylistTrack>> = _userPlaylistState
@@ -25,10 +30,11 @@ class VMUserPlaylist @Inject constructor(private val userPlaylistRepository: Use
     fun getUserPlaylist(userId: String, userPlaylistId: Int) {
         viewModelScope.launch {
             try {
+                _loadingState.value = true
                 _userPlaylistState.value = userPlaylistRepository.getUserPlaylist(userId, userPlaylistId)
                 _loadingState.value = false
             } catch (e:Exception) {
-                _errorState.value = "Ops... Something went wrong"
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }
