@@ -2,11 +2,8 @@ package com.cevdetkilickeser.stopify.viewmodel
 
 import android.app.Application
 import android.app.DownloadManager
-import android.app.DownloadManager.Request
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
-import android.net.Uri
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
@@ -28,7 +25,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 @UnstableApi
@@ -219,13 +215,8 @@ class VMMusicPlayer @Inject constructor(
     fun downloadSong(playerTrack: PlayerTrack, userId: String) {
         viewModelScope.launch {
             try {
-                val request = Request(Uri.parse(playerTrack.trackPreview))
-                    .setTitle("${playerTrack.trackTitle.replace(" ", "_")}.mp3")
-                    .setNotificationVisibility(Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    .setAllowedOverMetered(true)
-
-                val downloadId = downloadManager.enqueue(request)
-                val fileUri: String? = getDownloadedFileUri(downloadManager, downloadId)
+                val downloadId = downloadRepository.downloadToLocalStorage(playerTrack, downloadManager)
+                val fileUri: String? = downloadRepository.getDownloadedFileUriToInsert(downloadManager, downloadId)
                 val download = fileUri?.let {
                     Download(
                         0,
@@ -251,31 +242,9 @@ class VMMusicPlayer @Inject constructor(
         }
     }
 
-    private fun getDownloadedFileUri(downloadManager: DownloadManager, downloadId: Long): String? {
-        val query = DownloadManager.Query().setFilterById(downloadId)
-        val cursor: Cursor = downloadManager.query(query)
-
-        if (cursor.moveToFirst()) {
-            val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
-            val uriString = cursor.getString(columnIndex)
-            if (uriString != null) {
-                return uriString
-            }
-        }
-        cursor.close()
-        return null
-    }
-
-    fun deleteDownload(userId: String, trackId: String, downloadId: Long, fileUri: String) {
-        val file = Uri.parse(fileUri).path?.let { File(it) }
-        if (file != null) {
-            if (file.exists()) {
-                println("exist")
-                file.delete()
-            }
-        }
-        downloadManager.remove(downloadId)
+    fun deleteDownload(userId: String, trackId: String, downloadId: Long, fileUri: String, context: Context) {
         viewModelScope.launch {
+            downloadRepository.deleteDownloadFromLocaleStorage(downloadId, fileUri, context, downloadManager)
             downloadRepository.deleteDownload(Download(downloadId,"","","","","","",""))
             getDownloadList(userId, trackId)
             _isDownloadInfoState.value = "Deleted"
@@ -296,7 +265,7 @@ class VMMusicPlayer @Inject constructor(
                 _nextUserPlaylistId.value = userPlaylistRepository.getUserPlaylistResponses(userId)
                     .last().userPlaylistId + 1
             } catch (e: Exception) {
-                Log.e("şşş", "Hata")
+                Log.e("MusicPlayerScreen", e.message.toString())
             }
         }
     }
