@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,6 +37,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.genre.GenreData
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
@@ -43,17 +45,17 @@ import com.cevdetkilickeser.stopify.viewmodel.VMHome
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: VMHome = hiltViewModel()) {
+    val context = LocalContext.current
     val genreDataList by viewModel.genreDataState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
-    val isConnected by viewModel.isConnected.collectAsState()
-    var launchEffectInitializer by rememberSaveable { mutableStateOf(isConnected)}
+    val isConnected by viewModel.isConnected.collectAsState(isInternetAvailable(context))
+    var launchEffectInitializer by rememberSaveable { mutableStateOf(!isConnected)}
 
     LaunchedEffect(isConnected) {
         if (launchEffectInitializer != isConnected) {
             viewModel.getGenreDataList()
             launchEffectInitializer  = isConnected
-            println("launched effect")
         }
     }
 
