@@ -40,6 +40,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.json
 import com.cevdetkilickeser.stopify.ui.screens.AlbumScreen
 import com.cevdetkilickeser.stopify.ui.screens.ArtistScreen
 import com.cevdetkilickeser.stopify.ui.screens.DownloadsScreen
@@ -54,7 +55,6 @@ import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
 import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
 import com.cevdetkilickeser.stopify.ui.screens.UserPlayListScreen
 import com.cevdetkilickeser.stopify.viewmodel.VMMain
-import kotlinx.serialization.json.Json
 
 @Composable
 fun MainScreen (navController: NavHostController, viewModel: VMMain = hiltViewModel()) {
@@ -304,10 +304,10 @@ fun MyNavHost(navController: NavHostController, userId: String?, innerPadding: P
         ) { navBackStackEntry ->
             val startIndex =
                 navBackStackEntry.arguments?.getInt("startIndex") ?: return@composable
-            val playerTrackListGson =
+            val playerTrackListJson =
                 navBackStackEntry.arguments?.getString("playerTrackList") ?: return@composable
-            val playerTrackList = Json.decodeFromString<List<PlayerTrack>>(playerTrackListGson)
-            MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList, userId = userId!!)
+            val playerTrackList = json.decodeFromString<List<PlayerTrack>>(playerTrackListJson)
+            MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList, playerTrackListJson = playerTrackListJson, userId = userId!!)
         }
         composable("downloads") {
             DownloadsScreen(navController = navController, userId = userId!!)
