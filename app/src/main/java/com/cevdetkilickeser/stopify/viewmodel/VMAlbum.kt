@@ -1,9 +1,13 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.cevdetkilickeser.stopify.data.model.album.AlbumResponse
+import com.cevdetkilickeser.stopify.NetworkMonitor
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.model.album.AlbumResponse
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +17,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMAlbum @Inject constructor(private val serviceRepository: ServiceRepository, private val likeRepository: LikeRepository) : ViewModel() {
+class VMAlbum @Inject constructor(
+    application: Application,
+    private val serviceRepository: ServiceRepository,
+    private val likeRepository: LikeRepository,
+    private val networkMonitor: NetworkMonitor
+) : AndroidViewModel(application) {
 
     private val _albumState = MutableStateFlow<AlbumResponse?>(null)
     val albumState: StateFlow<AlbumResponse?> = _albumState
@@ -27,13 +36,25 @@ class VMAlbum @Inject constructor(private val serviceRepository: ServiceReposito
     private val _errorState = MutableStateFlow<String?>(null)
     val errorState: StateFlow<String?> = _errorState
 
-    fun getAlbum(albumId: String)  {
+    private val _isConnected = MutableStateFlow(isInternetAvailable(application))
+    val isConnected: StateFlow<Boolean> = _isConnected
+
+    init {
+        networkMonitor.startNetworkCallback()
+        networkMonitor.onNetworkStatusChanged = { isConnected ->
+            _errorState.value = null
+            _isConnected.value = isConnected
+        }
+    }
+
+    fun getAlbum(albumId: String) {
         viewModelScope.launch {
             try {
+                _loadingState.value = true
                 _albumState.value = serviceRepository.getAlbumResponse(albumId)
                 _loadingState.value = false
             } catch (e: Exception) {
-                _errorState.value = "Ops... Something went wrong"
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }
@@ -56,5 +77,10 @@ class VMAlbum @Inject constructor(private val serviceRepository: ServiceReposito
         viewModelScope.launch {
             _likeListState.value = likeRepository.getLikes(userId)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        networkMonitor.stopNetworkCallback()
     }
 }

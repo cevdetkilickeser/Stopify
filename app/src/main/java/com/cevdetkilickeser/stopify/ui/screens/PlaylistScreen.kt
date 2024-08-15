@@ -19,12 +19,13 @@ import com.cevdetkilickeser.stopify.convertStandardCharsets
 import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.json
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.ui.component.search_screen.TrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMPlaylist
-import com.google.gson.Gson
+import kotlinx.serialization.builtins.ListSerializer
 
 @Composable
 fun PlaylistScreen(
@@ -79,10 +80,10 @@ fun PlaylistScreen(
                                     it.artist.name.convertStandardCharsetsReplacePlusWithSpace()
                                 )
                             }
-                            val playerTrackListGson = Gson().toJson(playerTrackList)
+                            val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), playerTrackList)
                             val playerTrack = playerTrackList.find { it.trackId == track.id }
                             val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-                            navController.navigate("player/$startIndex/$playerTrackListGson")
+                            navController.navigate("player/$startIndex/$playerTrackListJson")
                         },
                         onLikeClick = { track, isLike ->
                             if (isLike) {

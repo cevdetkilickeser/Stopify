@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,19 +30,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
+import com.cevdetkilickeser.stopify.convertStandardCharsets
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.model.album.TrackData
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
-import com.cevdetkilickeser.stopify.convertStandardCharsets
-import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
-import com.cevdetkilickeser.stopify.data.model.album.TrackData
+import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.viewmodel.VMAlbum
 import com.google.gson.Gson
 
@@ -59,66 +61,89 @@ fun AlbumScreen(
     val likeList by viewModel.likeListState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
+    val isConnected by viewModel.isConnected.collectAsState()
 
-    LaunchedEffect(albumId) {
+    LaunchedEffect(isConnected, albumId) {
         viewModel.getAlbum(albumId)
         viewModel.getLikes(userId)
     }
 
-    if (errorState.isNullOrEmpty()) {
-        if (loadingState) {
-            LoadingComponent()
-        } else {
-            val trackList = album!!.tracks.trackDataList
-                .filter { track -> track.preview.isNotEmpty() }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
-
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = album?.cover,
-                        error = painterResource(id = R.drawable.ic_play),
-                        fallback = painterResource(id = R.drawable.ic_play)
-                    ),
-                    contentDescription = "Album Image",
-                    modifier = Modifier
-                        .size(200.dp)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-
-                AlbumTrackList(
-                    isSearch = false,
-                    trackList = trackList,
-                    likeList = likeList,
-                    onTrackClick = { track ->
-                        val playerTrackList = trackList.map { PlayerTrack(it.id,it.title.convertStandardCharsetsReplacePlusWithSpace(),it.preview.convertStandardCharsets(),it.trackDataAlbum.coverXl.convertStandardCharsets(),it.trackDataArtist.name.convertStandardCharsetsReplacePlusWithSpace()) }
-                        val playerTrackListGson = Gson().toJson(playerTrackList)
-                        val playerTrack = playerTrackList.find { it.trackId == track.id }
-                        val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-                        navController.navigate("player/$startIndex/$playerTrackListGson")
-                    },
-                    onLikeClick = { track, isLike ->
-                        if (isLike) {
-                            viewModel.deleteLikeByTrackId(userId, track.id)
-                        } else {
-                            viewModel.insertLike(
-                                Like(
-                                    0,
-                                    userId,
-                                    track.id,
-                                    track.title,
-                                    track.trackDataArtist.name,
-                                    track.trackDataAlbum.coverXl,
-                                    track.preview
-                                )
-                            )
-                        }
-                    }
-                )
-            }
-        }
+    if (!isConnected) {
+        OfflineInfo(onClick = { navController.navigate("downloads") })
     } else {
-        ErrorScreen(errorMessage = errorState!!)
+        if (errorState.isNullOrEmpty()) {
+            if (loadingState) {
+                LoadingComponent()
+            } else {
+                val trackList = album!!.tracks.trackDataList
+                    .filter { track -> track.preview.isNotEmpty() }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.background(color = Color.White)
+                ) {
+
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            model = album!!.cover,
+                            error = painterResource(id = R.drawable.ic_play),
+                            fallback = painterResource(id = R.drawable.ic_play)
+                        ),
+                        contentDescription = "Album Image",
+                        modifier = Modifier
+                            .size(200.dp)
+                    )
+
+                    Text(text = album!!.title, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+
+                    Row (
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        Text(text = "Songs", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
+                    }
+
+                    AlbumTrackList(
+                        isSearch = false,
+                        trackList = trackList,
+                        likeList = likeList,
+                        onTrackClick = { track ->
+                            val playerTrackList = trackList.map {
+                                PlayerTrack(
+                                    it.id,
+                                    it.title.convertStandardCharsetsReplacePlusWithSpace(),
+                                    it.preview.convertStandardCharsets(),
+                                    it.trackDataAlbum.coverXl.convertStandardCharsets(),
+                                    it.trackDataArtist.name.convertStandardCharsetsReplacePlusWithSpace()
+                                )
+                            }
+                            val playerTrackListGson = Gson().toJson(playerTrackList)
+                            val playerTrack = playerTrackList.find { it.trackId == track.id }
+                            val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                            navController.navigate("player/$startIndex/$playerTrackListGson")
+                        },
+                        onLikeClick = { track, isLike ->
+                            if (isLike) {
+                                viewModel.deleteLikeByTrackId(userId, track.id)
+                            } else {
+                                viewModel.insertLike(
+                                    Like(
+                                        0,
+                                        userId,
+                                        track.id,
+                                        track.title,
+                                        track.trackDataArtist.name,
+                                        track.trackDataAlbum.coverXl,
+                                        track.preview
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+        } else {
+            ErrorScreen(errorMessage = errorState!!)
+        }
     }
 }
 
@@ -137,7 +162,7 @@ fun AlbumTrackList(
     ) {
         items(trackList) { track ->
             val isLike = likeList.any { it.trackId == track.id }
-            if (track.preview.isNotEmpty()){
+            if (track.preview.isNotEmpty()) {
                 AlbumTrackItem(
                     isSearch = isSearch,
                     track = track,
@@ -186,7 +211,9 @@ fun AlbumTrackItem(
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(horizontal = 8.dp).width(200.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .width(200.dp)
                 )
                 Text(
                     text = track.trackDataArtist.name,
@@ -196,7 +223,7 @@ fun AlbumTrackItem(
                 )
             }
         }
-        if (!isSearch){
+        if (!isSearch) {
             IconButton(onClick = { onLikeClick(track, isLike) }) {
                 Icon(
                     imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,

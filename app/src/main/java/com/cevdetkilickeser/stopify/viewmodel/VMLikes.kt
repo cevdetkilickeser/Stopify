@@ -1,7 +1,9 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +13,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMLikes @Inject constructor(private val likeRepository: LikeRepository) : ViewModel() {
+class VMLikes @Inject constructor(
+    application: Application,
+    private val likeRepository: LikeRepository
+) : AndroidViewModel(application) {
 
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
@@ -29,7 +34,7 @@ class VMLikes @Inject constructor(private val likeRepository: LikeRepository) : 
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {
-                _errorState.value = "Ops... Something went wrong"
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }

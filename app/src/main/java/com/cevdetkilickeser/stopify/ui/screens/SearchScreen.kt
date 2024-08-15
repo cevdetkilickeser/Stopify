@@ -23,7 +23,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,42 +32,53 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.cevdetkilickeser.stopify.convertStandardCharsets
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
+import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
+import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.ui.component.search_screen.AlbumList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.ArtistList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryAlbumList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryArtistList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryTrackList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.TrackList
-import com.cevdetkilickeser.stopify.convertStandardCharsets
-import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
-fun SearchScreen(navController: NavController, userId: String, viewModel: VMSearch = hiltViewModel()) {
+fun SearchScreen(
+    navController: NavController,
+    userId: String,
+    viewModel: VMSearch = hiltViewModel()
+) {
+
+    val searchResults by viewModel.trackListState.collectAsState()
+    val searchByArtistResults by viewModel.artistListState.collectAsState()
+    val searchByAlbumResults by viewModel.albumListState.collectAsState()
+    val historyTrackList by viewModel.historyTrackListState.collectAsState()
+    val historyArtistList by viewModel.historyArtistListState.collectAsState()
+    val historyAlbumList by viewModel.historyAlbumListState.collectAsState()
+    val loadingState by viewModel.loadingState.collectAsState()
+    val errorState by viewModel.errorState.collectAsState()
+    val isConnected by viewModel.isConnected.collectAsState()
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var selectedFilter by rememberSaveable { mutableStateOf("Track") }
     val filterOptions = listOf("Track", "Artist", "Album")
 
-    LaunchedEffect(searchQuery, selectedFilter, viewModel) {
-        search(searchQuery, selectedFilter, viewModel)
+    LaunchedEffect(isConnected, searchQuery, selectedFilter) {
+        viewModel.search(searchQuery, selectedFilter)
         viewModel.getHistory(selectedFilter)
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(color = Color.White)) {
-        val searchResults by viewModel.trackListState.collectAsState()
-        val searchByArtistResults by viewModel.artistListState.collectAsState()
-        val searchByAlbumResults by viewModel.albumListState.collectAsState()
-        val historyTrackList by viewModel.historyTrackListState.collectAsState()
-        val historyArtistList by viewModel.historyArtistListState.collectAsState()
-        val historyAlbumList by viewModel.historyAlbumListState.collectAsState()
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.White)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,86 +121,131 @@ fun SearchScreen(navController: NavController, userId: String, viewModel: VMSear
                 "Track" -> HistoryTrackList(
                     historyList = historyTrackList,
                     onHistoryClick = { history ->
-                        val playerTrackList = listOf(PlayerTrack(history.trackId!!, history.trackTitle!!.convertStandardCharsetsReplacePlusWithSpace(), history.trackPreview!!.convertStandardCharsets(), history.trackImage!!.convertStandardCharsets(), history.trackArtistName!!.convertStandardCharsetsReplacePlusWithSpace()))
+                        val playerTrackList = listOf(
+                            PlayerTrack(
+                                history.trackId!!,
+                                history.trackTitle!!.convertStandardCharsetsReplacePlusWithSpace(),
+                                history.trackPreview!!.convertStandardCharsets(),
+                                history.trackImage!!.convertStandardCharsets(),
+                                history.trackArtistName!!.convertStandardCharsetsReplacePlusWithSpace()
+                            )
+                        )
                         val playerTrackListGson = Gson().toJson(playerTrackList)
                         val playerTrack = playerTrackList.find { it.trackId == history.trackId }
                         val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
                         navController.navigate("player/$startIndex/$playerTrackListGson")
-                },
+                    },
                     onDeleteHistoryClick = { history ->
-                        viewModel.deleteHistory(history,selectedFilter)
+                        viewModel.deleteHistory(history, selectedFilter)
                     }
                 )
-                "Artist" -> HistoryArtistList(historyList = historyArtistList, onHistoryClick = { history ->
-                    navController.navigate("artist/${history.artistId}")
-                },
+
+                "Artist" -> HistoryArtistList(historyList = historyArtistList,
+                    onHistoryClick = { history ->
+                        navController.navigate("artist/${history.artistId}")
+                    },
                     onDeleteHistoryClick = { history ->
-                    viewModel.deleteHistory(history,selectedFilter)
+                        viewModel.deleteHistory(history, selectedFilter)
                     }
                 )
-                "Album" -> HistoryAlbumList(historyList = historyAlbumList, onHistoryClick = { history ->
-                    navController.navigate("album/${history.albumId}")
-                },
+
+                "Album" -> HistoryAlbumList(historyList = historyAlbumList,
+                    onHistoryClick = { history ->
+                        navController.navigate("album/${history.albumId}")
+                    },
                     onDeleteHistoryClick = { history ->
-                    viewModel.deleteHistory(history,selectedFilter)
+                        viewModel.deleteHistory(history, selectedFilter)
                     }
                 )
             }
         } else {
-            when (selectedFilter) {
-                "Track" -> TrackList(isSearch = true, trackList = searchResults, onTrackClick = { track ->
-                    val isHistory = historyTrackList.any {it.trackId == track.id}
-                    if (!isHistory){
-                        viewModel.insertHistory(
-                            History(
-                                historyId = 0,
-                                userId = userId,
-                                trackId = track.id,
-                                trackTitle = track.title,
-                                trackImage = track.album.coverXl,
-                                trackArtistName = track.artist.name,
-                                trackPreview = track.preview
+            if (!isConnected) {
+                OfflineInfo(onClick = { navController.navigate("downloads") })
+            } else {
+                if (errorState.isNullOrEmpty()) {
+                    if (loadingState) {
+                        LoadingComponent()
+                    } else {
+                        when (selectedFilter) {
+                            "Track" -> TrackList(
+                                isSearch = true,
+                                trackList = searchResults,
+                                onTrackClick = { track ->
+                                    val isHistory = historyTrackList.any { it.trackId == track.id }
+                                    if (!isHistory) {
+                                        viewModel.insertHistory(
+                                            History(
+                                                historyId = 0,
+                                                userId = userId,
+                                                trackId = track.id,
+                                                trackTitle = track.title,
+                                                trackImage = track.album.coverXl,
+                                                trackArtistName = track.artist.name,
+                                                trackPreview = track.preview
+                                            )
+                                        )
+                                    }
+                                    val playerTrackList = listOf(
+                                        PlayerTrack(
+                                            track.id,
+                                            track.title.convertStandardCharsetsReplacePlusWithSpace(),
+                                            track.preview.convertStandardCharsets(),
+                                            track.album.coverXl.convertStandardCharsets(),
+                                            track.artist.name.convertStandardCharsetsReplacePlusWithSpace()
+                                        )
+                                    )
+                                    val playerTrackListGson = Gson().toJson(playerTrackList)
+                                    val playerTrack =
+                                        playerTrackList.find { it.trackId == track.id }
+                                    val startIndex = playerTrack.let { playerTrackList.indexOf(it) }
+                                    navController.navigate("player/$startIndex/$playerTrackListGson")
+                                }
                             )
-                        )
-                    }
-                    val playerTrackList = listOf(PlayerTrack(track.id, track.title.convertStandardCharsetsReplacePlusWithSpace(), track.preview.convertStandardCharsets() ,track.album.coverXl.convertStandardCharsets() ,track.artist.name.convertStandardCharsetsReplacePlusWithSpace()))
-                    val playerTrackListGson = Gson().toJson(playerTrackList)
-                    val playerTrack = playerTrackList.find { it.trackId == track.id }
-                    val startIndex = playerTrack.let { playerTrackList.indexOf(it) }
-                    navController.navigate("player/$startIndex/$playerTrackListGson")
-                })
 
-                "Artist" -> ArtistList(artistList = searchByArtistResults, onArtistClick = { artist ->
-                    val isHistory = historyArtistList.any {it.artistId == artist.id}
-                    if (!isHistory){
-                        viewModel.insertHistory(
-                            History(
-                                historyId = 0,
-                                userId = userId,
-                                artistId = artist.id,
-                                artistName = artist.name,
-                                artistImage = artist.picture
+                            "Artist" -> ArtistList(
+                                artistList = searchByArtistResults,
+                                onArtistClick = { artist ->
+                                    val isHistory =
+                                        historyArtistList.any { it.artistId == artist.id }
+                                    if (!isHistory) {
+                                        viewModel.insertHistory(
+                                            History(
+                                                historyId = 0,
+                                                userId = userId,
+                                                artistId = artist.id,
+                                                artistName = artist.name,
+                                                artistImage = artist.picture
+                                            )
+                                        )
+                                    }
+                                    navController.navigate("artist/${artist.id}")
+                                }
                             )
-                        )
-                    }
-                    navController.navigate("artist/${artist.id}")
-                })
-                "Album" -> AlbumList(albumList = searchByAlbumResults, onAlbumClick = { album ->
-                    val isHistory = historyAlbumList.any {it.albumId == album.id}
-                    if (!isHistory){
-                        viewModel.insertHistory(
-                            History(
-                                historyId = 0,
-                                userId = userId,
-                                albumId = album.id,
-                                albumTitle = album.title,
-                                albumImage = album.coverXl,
-                                albumArtistName = album.artist.name
+
+                            "Album" -> AlbumList(
+                                albumList = searchByAlbumResults,
+                                onAlbumClick = { album ->
+                                    val isHistory = historyAlbumList.any { it.albumId == album.id }
+                                    if (!isHistory) {
+                                        viewModel.insertHistory(
+                                            History(
+                                                historyId = 0,
+                                                userId = userId,
+                                                albumId = album.id,
+                                                albumTitle = album.title,
+                                                albumImage = album.coverXl,
+                                                albumArtistName = album.artist.name
+                                            )
+                                        )
+                                    }
+                                    navController.navigate("album/${album.id}")
+                                }
                             )
-                        )
+                        }
                     }
-                    navController.navigate("album/${album.id}")
-                })
+                } else {
+                    ErrorScreen(errorMessage = errorState!!)
+                }
             }
         }
     }
@@ -205,27 +260,31 @@ fun QueryFilter(
     viewModel: VMSearch
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
 
     Box {
-        Button(onClick = { expanded = true }, modifier = Modifier.width(90.dp), colors = ButtonDefaults.buttonColors(containerColor = Color.Black)) {
+        Button(
+            onClick = { expanded = true },
+            modifier = Modifier.width(90.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        ) {
             Text(selectedFilter)
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(color = Color.LightGray)) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(color = Color.LightGray)
+        ) {
             filterOptions.forEach { option ->
                 DropdownMenuItem(text = { Text(text = option) }, onClick = {
                     onFilterSelected(option)
                     expanded = false
-                    coroutineScope.launch {
-                        viewModel.getHistory(selectedFilter)
-                        search(searchQuery, selectedFilter, viewModel)
-                    }
+                    viewModel.getHistory(selectedFilter)
+                    viewModel.search(searchQuery, selectedFilter)
                 })
             }
         }
     }
 }
-
 
 
 suspend fun search(searchQuery: String, selectedFilter: String, viewModel: VMSearch) {

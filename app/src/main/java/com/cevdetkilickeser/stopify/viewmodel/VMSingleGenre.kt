@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.NetworkMonitor
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
 import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
@@ -47,7 +48,7 @@ class VMSingleGenre @Inject constructor(
                 _state.value = repository.getSingleGenreDataList(genreId)
                 _loadingState.value = false
             } catch (e: Exception) {
-                _errorState.value = "Ops... Something went wrong"
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }

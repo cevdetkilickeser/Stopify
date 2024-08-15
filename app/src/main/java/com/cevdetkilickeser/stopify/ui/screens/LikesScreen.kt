@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -58,24 +59,36 @@ fun LikesScreen(
         viewModel.getLikes(userId)
     }
 
-    if (errorState.isNullOrEmpty()) {
-        if (loadingState) {
-            LoadingComponent()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Text(
+        text = "Likes",
+        fontSize = 24.sp,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+        if (errorState.isNullOrEmpty()) {
+            if (loadingState) {
+                LoadingComponent()
+            } else {
+                LikeList(likeList = likeList, onLikeClick = { like ->
+                    val playerTrackList = likeList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.trackPreview.convertStandardCharsets(),it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
+                    val playerTrackListGson = Gson().toJson(playerTrackList)
+                    val playerTrack = playerTrackList.find { it.trackId == like.trackId }
+                    val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                    navController.navigate("player/$startIndex/$playerTrackListGson")
+                },
+                    onDeleteLikeClick = { like ->
+                        viewModel.deleteLike(like)
+                    }
+                )
+            }
         } else {
-            LikeList(likeList = likeList, onLikeClick = { like ->
-                val playerTrackList = likeList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.trackPreview.convertStandardCharsets(),it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
-                val playerTrackListGson = Gson().toJson(playerTrackList)
-                val playerTrack = playerTrackList.find { it.trackId == like.trackId }
-                val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-                navController.navigate("player/$startIndex/$playerTrackListGson")
-            },
-                onDeleteLikeClick = { like ->
-                    viewModel.deleteLike(like)
-                }
-            )
+            ErrorScreen(errorMessage = errorState!!)
         }
-    } else {
-        ErrorScreen(errorMessage = errorState!!)
     }
 }
 

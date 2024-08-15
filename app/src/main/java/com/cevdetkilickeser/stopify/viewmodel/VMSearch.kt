@@ -1,12 +1,15 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.cevdetkilickeser.stopify.NetworkMonitor
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.data.model.playlist.Track
 import com.cevdetkilickeser.stopify.data.model.search.AlbumData
 import com.cevdetkilickeser.stopify.data.model.search.ArtistData
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.HistoryRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +19,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMSearch @Inject constructor(private val serviceRepository: ServiceRepository, private val historyRepository: HistoryRepository) : ViewModel() {
+class VMSearch @Inject constructor(
+    application: Application,
+    private val networkMonitor: NetworkMonitor,
+    private val serviceRepository: ServiceRepository,
+    private val historyRepository: HistoryRepository
+) : AndroidViewModel(application) {
 
     private val _trackListState = MutableStateFlow<List<Track>>(emptyList())
     val trackListState: StateFlow<List<Track>> = _trackListState
@@ -36,6 +44,43 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
     private val _historyAlbumListState = MutableStateFlow<List<History>>(emptyList())
     val historyAlbumListState: StateFlow<List<History>> = _historyAlbumListState
 
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
+    private val _isConnected = MutableStateFlow(isInternetAvailable(application))
+    val isConnected: StateFlow<Boolean> = _isConnected
+
+    init {
+        networkMonitor.startNetworkCallback()
+        networkMonitor.onNetworkStatusChanged = { isConnected ->
+            _errorState.value = null
+            _isConnected.value = isConnected
+        }
+    }
+
+    fun search(searchQuery: String, selectedFilter: String) {
+        viewModelScope.launch {
+            if (searchQuery.isNotEmpty()) {
+                try {
+                    _loadingState.value = true
+                    when (selectedFilter) {
+                        "Track" -> getSearchResponse(searchQuery)
+                        "Artist" -> getSearchByArtistResponse(searchQuery)
+                        "Album" -> getSearchByAlbumResponse(searchQuery)
+                    }
+                    _loadingState.value = false
+                } catch (e:Exception){
+                    _errorState.value = getApplication<Application>().getString(R.string.error)
+                }
+            } else {
+                clearSearchResult()
+            }
+        }
+    }
+
     fun clearSearchResult() {
         _trackListState.value = emptyList()
         _artistListState.value = emptyList()
@@ -49,7 +94,7 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
                     .filter { track -> track.preview.isNotEmpty() }
                 _trackListState.value = trackList
             } catch (e: Exception) {
-                Log.e("ŞŞŞ", "Hata")
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }
@@ -60,7 +105,7 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
                 val artistList = serviceRepository.getSearchByArtistResponse(query)
                 _artistListState.value = artistList
             } catch (e: Exception) {
-                Log.e("ŞŞŞ", "Hata")
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }
@@ -71,7 +116,7 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
                 val albumList = serviceRepository.getSearchByAlbumResponse(query)
                 _albumListState.value = albumList
             } catch (e: Exception) {
-                Log.e("ŞŞŞ", "Hata")
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }
@@ -80,12 +125,17 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
         viewModelScope.launch {
             try {
                 when (selectedFilter) {
-                    "Track" -> _historyTrackListState.value = historyRepository.getTrackHistory().sortedByDescending { it.historyId }
-                    "Artist" -> _historyArtistListState.value = historyRepository.getArtistHistory().sortedByDescending { it.historyId }
-                    "Album" -> _historyAlbumListState.value = historyRepository.getAlbumHistory().sortedByDescending { it.historyId }
+                    "Track" -> _historyTrackListState.value =
+                        historyRepository.getTrackHistory().sortedByDescending { it.historyId }
+
+                    "Artist" -> _historyArtistListState.value =
+                        historyRepository.getArtistHistory().sortedByDescending { it.historyId }
+
+                    "Album" -> _historyAlbumListState.value =
+                        historyRepository.getAlbumHistory().sortedByDescending { it.historyId }
                 }
             } catch (e: Exception) {
-                Log.e("ŞŞŞ", "Hata")
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }
@@ -101,6 +151,11 @@ class VMSearch @Inject constructor(private val serviceRepository: ServiceReposit
             historyRepository.deleteHistory(history)
             getHistory(selectedFilter)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        networkMonitor.stopNetworkCallback()
     }
 }
 

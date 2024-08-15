@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.NetworkMonitor
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.playlist.Track
 import com.cevdetkilickeser.stopify.isInternetAvailable
@@ -54,8 +55,7 @@ class VMPlaylist @Inject constructor(
                     .filter { track -> track.preview.isNotEmpty() }
                 _loadingState.value = false
             } catch (e: Exception) {
-                _errorState.value = "Ops... Something went wrong"
-                println(_trackListState.value)
+                _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }

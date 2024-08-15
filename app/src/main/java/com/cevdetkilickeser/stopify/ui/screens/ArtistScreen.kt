@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,7 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -33,6 +34,7 @@ import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.artist.ArtistAlbumData
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
+import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.viewmodel.VMArtist
 
 @Composable
@@ -45,42 +47,53 @@ fun ArtistScreen(
     val artistAlbums by viewModel.artistAlbumState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
+    val isConnected by viewModel.isConnected.collectAsState()
 
-    LaunchedEffect(artistId) {
+    LaunchedEffect(isConnected, artistId) {
         viewModel.getArtist(artistId)
-        viewModel.getArtistArtistAlbum(artistId)
     }
 
-    if (errorState.isNullOrEmpty()) {
-        if (loadingState) {
-            LoadingComponent()
-        } else {
-            Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(color = Color.White)) {
-
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = artist?.pictureXl,
-                        error = painterResource(id = R.drawable.ic_play),
-                        fallback = painterResource(id = R.drawable.ic_play)
-                    ),
-                    contentDescription = "Artist Image",
-                    modifier = Modifier
-                        .size(200.dp)
-                        .fillMaxWidth(1f)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                ArtistAlbumList(
-                    albumList = artistAlbums,
-                    onAlbumClick = { album ->
-                        navController.navigate("album/${album.id}")
-                    }
-                )
-            }
-        }
+    if (!isConnected) {
+        OfflineInfo(onClick = { navController.navigate("downloads")})
     } else {
-        ErrorScreen(errorMessage = errorState!!)
+        if (errorState.isNullOrEmpty()) {
+            if (loadingState) {
+                LoadingComponent()
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.background(color = Color.White)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            model = artist!!.pictureXl,
+                            error = painterResource(id = R.drawable.ic_play),
+                            fallback = painterResource(id = R.drawable.ic_play)
+                        ),
+                        contentDescription = "Artist Image",
+                        modifier = Modifier
+                            .size(200.dp)
+                    )
+
+                    Text(text = artist!!.name, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+
+                    Row (
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        Text(text = "Albums", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
+                    }
+
+                    ArtistAlbumList(
+                        albumList = artistAlbums,
+                        onAlbumClick = { album ->
+                            navController.navigate("album/${album.id}")
+                        }
+                    )
+                }
+            }
+        } else {
+            ErrorScreen(errorMessage = errorState!!)
+        }
     }
 }
 
@@ -88,7 +101,8 @@ fun ArtistScreen(
 fun ArtistAlbumList(albumList: List<ArtistAlbumData>, onAlbumClick: (ArtistAlbumData) -> Unit) {
     LazyColumn(
         modifier = Modifier
-            .background(color = Color.White).fillMaxSize()
+            .background(color = Color.White)
+            .fillMaxSize()
     ) {
         items(albumList) { album ->
             ArtistAlbumtItem(album = album, onAlbumClick = onAlbumClick)
@@ -119,7 +133,8 @@ fun ArtistAlbumtItem(album: ArtistAlbumData, onAlbumClick: (ArtistAlbumData) -> 
         Column {
             Text(
                 text = album.title,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 16.sp,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
