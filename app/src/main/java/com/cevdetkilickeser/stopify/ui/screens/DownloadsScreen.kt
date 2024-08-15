@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -41,6 +42,8 @@ import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
+import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMDownloads
 import com.google.gson.Gson
 
@@ -50,43 +53,64 @@ fun DownloadsScreen(
     userId: String,
     viewModel: VMDownloads = hiltViewModel()
 ) {
+    val downloadList by viewModel.downloadListState.collectAsState()
+    val likeList by viewModel.likeListState.collectAsState()
+    val loadingState by viewModel.loadingState.collectAsState()
+    val errorState by viewModel.errorState.collectAsState()
 
     LaunchedEffect(userId) {
-        viewModel.getDownloads()
+        viewModel.getDownloads(userId)
         viewModel.getLikes(userId)
     }
 
-    val downloadList by viewModel.downloadListState.collectAsState()
-    val likeList by viewModel.likeListState.collectAsState()
-
-    DownloadList(
-        downloadList = downloadList,
-        likeList = likeList,
-        onClick = { download ->
-            val playerTrackList = downloadList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.fileUri!!.convertStandardCharsets(), it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
-            val playerTrackListGson = Gson().toJson(playerTrackList)
-            val playerTrack = playerTrackList.find { it.trackId == download.trackId }
-            val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-            navController.navigate("player/$startIndex/$playerTrackListGson")
-        },
-        onLikeClick = { download, isLike ->
-            if (isLike) {
-                viewModel.deleteLikeByTrackId(userId, download.trackId)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Text(
+            text = "Downloads",
+            fontSize = 24.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        if (errorState.isNullOrEmpty()) {
+            if (loadingState) {
+                LoadingComponent()
             } else {
-                viewModel.insertLike(
-                    Like(
-                        0,
-                        userId,
-                        download.trackId,
-                        download.trackTitle,
-                        download.trackArtistName,
-                        download.trackImage,
-                        download.trackPreview
-                    )
+                DownloadList(
+                    downloadList = downloadList,
+                    likeList = likeList,
+                    onClick = { download ->
+                        val playerTrackList = downloadList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.fileUri!!.convertStandardCharsets(), it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
+                        val playerTrackListGson = Gson().toJson(playerTrackList)
+                        val playerTrack = playerTrackList.find { it.trackId == download.trackId }
+                        val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                        navController.navigate("player/$startIndex/$playerTrackListGson")
+                    },
+                    onLikeClick = { download, isLike ->
+                        if (isLike) {
+                            viewModel.deleteLikeByTrackId(userId, download.trackId)
+                        } else {
+                            viewModel.insertLike(
+                                Like(
+                                    0,
+                                    userId,
+                                    download.trackId,
+                                    download.trackTitle,
+                                    download.trackArtistName,
+                                    download.trackImage,
+                                    download.trackPreview
+                                )
+                            )
+                        }
+                    }
                 )
             }
+        } else {
+            ErrorScreen(errorMessage = errorState!!)
         }
-    )
+    }
 }
 
 @Composable
