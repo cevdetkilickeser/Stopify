@@ -19,10 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +37,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
@@ -45,14 +50,18 @@ fun SingleGenreScreen(
     genreName: String,
     viewModel: VMSingleGenre = hiltViewModel()
 ) {
-
+    val context = LocalContext.current
     val singleGenreDataList by viewModel.state.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
-    val isConnected by viewModel.isConnected.collectAsState()
+    val isConnected by viewModel.isConnected.collectAsState(isInternetAvailable(context))
+    var launchEffectInitializer by rememberSaveable { mutableStateOf(!isConnected) }
 
-    LaunchedEffect(isConnected, genreId) {
-        viewModel.getSingleGenreDataList(genreId)
+    LaunchedEffect(isConnected) {
+        if (launchEffectInitializer != isConnected) {
+            viewModel.getSingleGenreDataList(genreId)
+            launchEffectInitializer  = isConnected
+        }
     }
 
     Column(
