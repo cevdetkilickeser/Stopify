@@ -9,5 +9,5 @@ class DownloadRepository(private val downloadDao: DownloadDao) {
 
     suspend fun deleteDownload(download: Download)= downloadDao.deleteDownload(download)
 
-    suspend fun getDownloads(): List<Download> = downloadDao.getDownloads()
+    suspend fun getDownloads(userId: String): List<Download> = downloadDao.getDownloads(userId)
 }

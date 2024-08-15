@@ -30,10 +30,14 @@ import javax.inject.Inject
 
 @UnstableApi
 @HiltViewModel
-class VMMusicPlayer @Inject constructor(application: Application, private val downloadRepository: DownloadRepository, private val userPlaylistRepository: UserPlaylistRepository
+class VMMusicPlayer @Inject constructor(
+    application: Application,
+    private val downloadRepository: DownloadRepository,
+    private val userPlaylistRepository: UserPlaylistRepository,
 ) : AndroidViewModel(application) {
 
-    private val downloadManager = application.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    private val downloadManager =
+        application.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
     private val _player: ExoPlayer = ExoPlayer.Builder(application)
         .setSeekForwardIncrementMs(10000L)
@@ -57,10 +61,12 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     private val _downloadListState = MutableStateFlow<List<Download>>(emptyList())
 
     private val _isDownloadState = MutableStateFlow(false)
-    val isDownloadState: StateFlow<Boolean> =  _isDownloadState
+    val isDownloadState: StateFlow<Boolean> = _isDownloadState
 
-    private val _userPlaylistResponsesState = MutableStateFlow<List<UserPlaylistResponse>>(emptyList())
-    val userPlaylistResponsesState: StateFlow<List<UserPlaylistResponse>> =  _userPlaylistResponsesState
+    private val _userPlaylistResponsesState =
+        MutableStateFlow<List<UserPlaylistResponse>>(emptyList())
+    val userPlaylistResponsesState: StateFlow<List<UserPlaylistResponse>> =
+        _userPlaylistResponsesState
 
     private val _nextUserPlaylistId = MutableStateFlow(0)
     val nextUserPlaylistId: StateFlow<Int> = _nextUserPlaylistId
@@ -69,21 +75,26 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         _player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 val url = mediaItem?.localConfiguration?.uri.toString()
-                _currentTrack.value = _playerListState.value.find { playerTrack -> playerTrack.trackPreview == url }
-                _isDownloadState.value = _downloadListState.value.any {it.trackId == currentTrack.value?.trackId}
+                _currentTrack.value =
+                    _playerListState.value.find { playerTrack -> playerTrack.trackPreview == url }
+                _isDownloadState.value =
+                    _downloadListState.value.any { it.trackId == currentTrack.value?.trackId }
             }
+
             override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
                     Player.STATE_READY -> {
                         _duration.value = _player.duration
                         _isPlaying.value = _player.playWhenReady
                     }
+
                     Player.STATE_ENDED -> {
                         _player.seekTo(0, 0L)
                         _player.pause()
                         _isPlaying.value = false
                         _currentPosition.value = 0L
                     }
+
                     Player.STATE_BUFFERING -> {}
                     Player.STATE_IDLE -> {}
                 }
@@ -93,8 +104,9 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
 
     fun load(startIndex: Int, playerTrackList: List<PlayerTrack>) {
         _playerListState.value = playerTrackList
-        val mediaItems = playerTrackList.map { playerTrack -> MediaItem.fromUri(playerTrack.trackPreview) }
-        _player.setMediaItems(mediaItems,startIndex,0L)
+        val mediaItems =
+            playerTrackList.map { playerTrack -> MediaItem.fromUri(playerTrack.trackPreview) }
+        _player.setMediaItems(mediaItems, startIndex, 0L)
         _player.prepare()
     }
 
@@ -118,10 +130,10 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     }
 
     fun previousSong() {
-        if (_currentPosition.value > 1000L){
+        if (_currentPosition.value > 1000L) {
             _player.seekBack()
             _currentPosition.value = 0L
-        } else  {
+        } else {
             val currentIndex = _player.currentMediaItemIndex
             if (currentIndex > 0) {
                 _player.seekTo(currentIndex - 1, 0L)
@@ -132,7 +144,7 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
 
     fun rewind() {
         _player.seekBack()
-        if (_currentPosition.value > 10000L){
+        if (_currentPosition.value > 10000L) {
             _currentPosition.value -= 10000L
         } else {
             _currentPosition.value = 0L
@@ -154,10 +166,10 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
     }
 
     fun seekTo(index: Int, position: Long) {
-        _player.seekTo(index,position)
+        _player.seekTo(index, position)
     }
 
-    fun share(shareLink: String,context: Context) {
+    fun share(shareLink: String, context: Context) {
         val shareWith = "ShareWith"
         val type = "text/plain"
 
@@ -181,19 +193,14 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        _player.release()
-    }
-
-    fun getDownloads(trackId: String) {
+    fun getDownloads(userId: String, trackId: String) {
         viewModelScope.launch {
-            _downloadListState.value = downloadRepository.getDownloads()
-            _isDownloadState.value = _downloadListState.value.any {it.trackId == trackId}
+            _downloadListState.value = downloadRepository.getDownloads(userId)
+            _isDownloadState.value = _downloadListState.value.any { it.trackId == trackId }
         }
     }
 
-    fun downloadSong(playerTrack: PlayerTrack) {
+    fun downloadSong(playerTrack: PlayerTrack, userId: String) {
         viewModelScope.launch {
             try {
                 val request = Request(Uri.parse(playerTrack.trackPreview))
@@ -202,12 +209,21 @@ class VMMusicPlayer @Inject constructor(application: Application, private val do
                     .setAllowedOverMetered(true)
 
                 val downloadId = downloadManager.enqueue(request)
-                val fileUri: String? = getDownloadedFileUri(downloadManager,downloadId)
-                val download = Download(0, fileUri, playerTrack.trackId, playerTrack.trackPreview, playerTrack.trackTitle, playerTrack.trackImage, playerTrack.trackArtistName)
+                val fileUri: String? = getDownloadedFileUri(downloadManager, downloadId)
+                val download = Download(
+                    0,
+                    userId,
+                    fileUri,
+                    playerTrack.trackId,
+                    playerTrack.trackPreview,
+                    playerTrack.trackTitle,
+                    playerTrack.trackImage,
+                    playerTrack.trackArtistName
+                )
                 downloadRepository.insertDownload(download)
-                getDownloads(playerTrack.trackId)
+                getDownloads(userId, playerTrack.trackId)
             } catch (e: Exception) {
-                Log.e("şşş","Hata")
+                Log.e("şşş", "Hata")
             }
         }
     }

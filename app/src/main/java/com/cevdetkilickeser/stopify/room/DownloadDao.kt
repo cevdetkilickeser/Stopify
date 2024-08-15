@@ -15,6 +15,6 @@ interface DownloadDao {
     @Delete
     suspend fun deleteDownload(download: Download)
 
-    @Query("SELECT * FROM download_table")
-    suspend fun getDownloads(): List<Download>
+    @Query("SELECT * FROM download_table  WHERE userId = :userId")
+    suspend fun getDownloads(userId: String): List<Download>
 }
