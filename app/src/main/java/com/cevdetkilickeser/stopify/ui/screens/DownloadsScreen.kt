@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
@@ -82,7 +83,7 @@ fun DownloadsScreen(
                     downloadList = downloadList,
                     likeList = likeList,
                     onClick = { download ->
-                        val playerTrackList = downloadList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.fileUri!!.convertStandardCharsets(), it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
+                        val playerTrackList = downloadList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.fileUri.convertStandardCharsets(), it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
                         val playerTrackListGson = Gson().toJson(playerTrackList)
                         val playerTrack = playerTrackList.find { it.trackId == download.trackId }
                         val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
@@ -104,6 +105,9 @@ fun DownloadsScreen(
                                 )
                             )
                         }
+                    },
+                    onDeleteClick = { download ->
+                        viewModel.deleteDownload(download.downloadId, download.fileUri, userId)
                     }
                 )
             }
@@ -118,7 +122,8 @@ fun DownloadList(
     downloadList: List<Download>,
     likeList: List<Like>,
     onClick: (Download) -> Unit,
-    onLikeClick: (Download, Boolean) -> Unit
+    onLikeClick: (Download, Boolean) -> Unit,
+    onDeleteClick: (Download) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -131,7 +136,8 @@ fun DownloadList(
                 download = download,
                 isLike = isLike,
                 onClick = onClick,
-                onLikeClick = onLikeClick
+                onLikeClick = onLikeClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }
@@ -142,7 +148,8 @@ fun DownloadItem(
     download: Download,
     isLike: Boolean,
     onClick: (Download) -> Unit,
-    onLikeClick: (Download, Boolean) -> Unit
+    onLikeClick: (Download, Boolean) -> Unit,
+    onDeleteClick: (Download) -> Unit
 ) {
     Row (
         modifier = Modifier
@@ -187,6 +194,12 @@ fun DownloadItem(
         IconButton(onClick = { onLikeClick(download, isLike) }) {
             Icon(
                 imageVector = if (isLike) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                contentDescription = null
+            )
+        }
+        IconButton(onClick = { onDeleteClick(download) }) {
+            Icon(
+                imageVector = Icons.Default.Delete,
                 contentDescription = null
             )
         }

@@ -1,6 +1,9 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
 import android.app.Application
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.R
@@ -12,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,6 +24,9 @@ class VMDownloads @Inject constructor(
     private val downloadRepository: DownloadRepository,
     private val likeRepository: LikeRepository
 ): AndroidViewModel(application) {
+
+    private val downloadManager =
+        application.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
     private val _downloadListState = MutableStateFlow<List<Download>>(emptyList())
     val downloadListState: StateFlow<List<Download>> = _downloadListState
@@ -42,6 +49,21 @@ class VMDownloads @Inject constructor(
             } catch (e: Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)
             }
+        }
+    }
+
+    fun deleteDownload(downloadId: Long, fileUri: String, userId: String) {
+        val file = Uri.parse(fileUri).path?.let { File(it) }
+        file?.let {
+            if (it.exists()) {
+                println("exist")
+                it.delete()
+            }
+        }
+        downloadManager.remove(downloadId)
+        viewModelScope.launch {
+            downloadRepository.deleteDownload(Download(downloadId,"","","","","","",""))
+            _downloadListState.value = downloadRepository.getDownloads(userId)
         }
     }
 
