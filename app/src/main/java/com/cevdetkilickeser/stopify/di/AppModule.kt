@@ -81,7 +81,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideUserPlaylistDao(@ApplicationContext context: Context): UserPlaylistDao {
+    fun providePlayerTrackDao(@ApplicationContext context: Context): UserPlaylistDao {
         return AppDatabase.getDatabase(context).getUserPlaylistDao()
     }
 
