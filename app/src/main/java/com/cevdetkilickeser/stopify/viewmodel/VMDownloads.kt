@@ -1,7 +1,9 @@
 package com.cevdetkilickeser.stopify.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.repo.DownloadRepository
@@ -13,7 +15,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VMDownloads @Inject constructor(private val downloadRepository: DownloadRepository, private val likeRepository: LikeRepository): ViewModel() {
+class VMDownloads @Inject constructor(
+    application: Application,
+    private val downloadRepository: DownloadRepository,
+    private val likeRepository: LikeRepository
+): AndroidViewModel(application) {
 
     private val _downloadListState = MutableStateFlow<List<Download>>(emptyList())
     val downloadListState: StateFlow<List<Download>> = _downloadListState
@@ -21,9 +27,21 @@ class VMDownloads @Inject constructor(private val downloadRepository: DownloadRe
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
 
-    fun getDownloads() {
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
+    fun getDownloads(userId: String) {
         viewModelScope.launch {
-            _downloadListState.value = downloadRepository.getDownloads().sortedByDescending { it.downloadId }
+            try {
+                _downloadListState.value = downloadRepository.getDownloads(userId).sortedByDescending { it.downloadId }
+                _loadingState.value = false
+                _errorState.value = null
+            } catch (e: Exception) {
+                _errorState.value = getApplication<Application>().getString(R.string.error)
+            }
         }
     }
 
