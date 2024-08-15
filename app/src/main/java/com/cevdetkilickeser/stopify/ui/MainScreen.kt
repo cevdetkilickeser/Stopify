@@ -54,8 +54,7 @@ import com.cevdetkilickeser.stopify.ui.screens.SignupScreen
 import com.cevdetkilickeser.stopify.ui.screens.SingleGenreScreen
 import com.cevdetkilickeser.stopify.ui.screens.UserPlayListScreen
 import com.cevdetkilickeser.stopify.viewmodel.VMMain
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.json.Json
 
 @Composable
 fun MainScreen (navController: NavHostController, viewModel: VMMain = hiltViewModel()) {
@@ -297,30 +296,34 @@ fun MyNavHost(navController: NavHostController, userId: String?, innerPadding: P
             AlbumScreen(navController = navController, albumId = albumId, userId = userId!!)
         }
         composable(
-            "player/{start_index}/{player_track_list}",
+            "player/{startIndex}/{playerTrackList}",
             arguments = listOf(
-                navArgument("start_index") { type = NavType.IntType },
-                navArgument("player_track_list") { type = NavType.StringType }
+                navArgument("startIndex") { type = NavType.IntType },
+                navArgument("playerTrackList") { type = NavType.StringType }
             )
         ) { navBackStackEntry ->
             val startIndex =
-                navBackStackEntry.arguments?.getInt("start_index") ?: return@composable
+                navBackStackEntry.arguments?.getInt("startIndex") ?: return@composable
             val playerTrackListGson =
-                navBackStackEntry.arguments?.getString("player_track_list") ?: return@composable
-            val listType = object : TypeToken<List<PlayerTrack>>() {}.type
-            val playerTrackList = Gson().fromJson<List<PlayerTrack>>(playerTrackListGson, listType)
+                navBackStackEntry.arguments?.getString("playerTrackList") ?: return@composable
+            val playerTrackList = Json.decodeFromString<List<PlayerTrack>>(playerTrackListGson)
             MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList, userId = userId!!)
         }
         composable("downloads") {
             DownloadsScreen(navController = navController, userId = userId!!)
         }
         composable(
-            "user_playlist/{user_playlist_id}",
-            arguments = listOf(navArgument("user_playlist_id") { type = NavType.IntType })
+            "userPlaylist/{userPlaylistId}/{userPlaylistName}",
+            arguments = listOf(
+                navArgument("userPlaylistId") { type = NavType.IntType },
+                navArgument("userPlaylistName") { type = NavType.StringType }
+            )
         ) { navBackStackEntry ->
             val userPlaylistId =
-                navBackStackEntry.arguments?.getInt("user_playlist_id") ?: return@composable
-            UserPlayListScreen(navController = navController, userId = userId!!, userPlaylistId = userPlaylistId)
+                navBackStackEntry.arguments?.getInt("userPlaylistId") ?: return@composable
+            val userPlaylistName =
+                navBackStackEntry.arguments?.getString("userPlaylistName") ?: return@composable
+            UserPlayListScreen(navController = navController, userId = userId!!, userPlaylistId = userPlaylistId, userPlaylistName = userPlaylistName)
         }
     }
 }
