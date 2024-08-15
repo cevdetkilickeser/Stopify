@@ -3,6 +3,7 @@ package com.cevdetkilickeser.stopify
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import kotlinx.serialization.json.Json
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -19,4 +20,12 @@ fun isInternetAvailable(context: Context): Boolean {
     val network = connectivityManager.activeNetwork ?: return false
     val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+}
+
+val json = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    allowSpecialFloatingPointValues = true
+    prettyPrint = true
+    coerceInputValues = true
 }
