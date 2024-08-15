@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Stopify</string>
+    <string name="error">Ops… Something went wrong</string>
 </resources>
