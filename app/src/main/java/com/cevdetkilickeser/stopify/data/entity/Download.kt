@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class Download(
     @PrimaryKey(autoGenerate = true) val downloadId: Long = 0,
     @ColumnInfo(name = "userId") val userId: String,
-    @ColumnInfo(name = "fileUri") val fileUri: String? = null,
+    @ColumnInfo(name = "fileUri") val fileUri: String,
     @ColumnInfo(name = "trackId") val trackId: String,
     @ColumnInfo(name = "trackPreview") val trackPreview: String,
     @ColumnInfo(name = "trackTitle") val trackTitle: String,
