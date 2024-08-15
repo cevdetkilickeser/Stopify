@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,7 @@ fun DownloadsScreen(
     userId: String,
     viewModel: VMDownloads = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val downloadList by viewModel.downloadListState.collectAsState()
     val likeList by viewModel.likeListState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
@@ -108,7 +110,7 @@ fun DownloadsScreen(
                         }
                     },
                     onDeleteClick = { download ->
-                        viewModel.deleteDownload(download.downloadId, download.fileUri, userId)
+                        viewModel.deleteDownload(download.downloadId, download.fileUri, userId, context)
                     }
                 )
             }

@@ -3,7 +3,6 @@ package com.cevdetkilickeser.stopify.viewmodel
 import android.app.Application
 import android.app.DownloadManager
 import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.R
@@ -15,7 +14,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,15 +50,9 @@ class VMDownloads @Inject constructor(
         }
     }
 
-    fun deleteDownload(downloadId: Long, fileUri: String, userId: String) {
-        val file = Uri.parse(fileUri).path?.let { File(it) }
-        file?.let {
-            if (it.exists()) {
-                it.delete()
-            }
-        }
-        downloadManager.remove(downloadId)
+    fun deleteDownload(downloadId: Long, fileUri: String, userId: String, context: Context) {
         viewModelScope.launch {
+            downloadRepository.deleteDownloadFromLocaleStorage(downloadId, fileUri, context, downloadManager)
             downloadRepository.deleteDownload(Download(downloadId,"","","","","","",""))
             _downloadListState.value = downloadRepository.getDownloads(userId)
         }
