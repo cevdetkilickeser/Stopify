@@ -243,13 +243,23 @@ class VMMusicPlayer @Inject constructor(
         return null
     }
 
+    fun deleteDownload(downloadId: Long) {
+        downloadManager.remove(downloadId)
+    }
+
+    fun getDownloadId(userId: String, trackId: String): Long {
+        return _downloadListState.value.find { it.trackId == trackId && it.userId == userId }!!.downloadId
+    }
+
     fun getUserPlaylistResponses(userId: String) {
         viewModelScope.launch {
             try {
-                _userPlaylistResponsesState.value = userPlaylistRepository.getUserPlaylistResponses(userId)
-                _nextUserPlaylistId.value = userPlaylistRepository.getUserPlaylistResponses(userId).last().userPlaylistId + 1
-            } catch (e:Exception) {
-                Log.e("şşş","Hata")
+                _userPlaylistResponsesState.value =
+                    userPlaylistRepository.getUserPlaylistResponses(userId)
+                _nextUserPlaylistId.value = userPlaylistRepository.getUserPlaylistResponses(userId)
+                    .last().userPlaylistId + 1
+            } catch (e: Exception) {
+                Log.e("şşş", "Hata")
             }
         }
     }
@@ -266,5 +276,10 @@ class VMMusicPlayer @Inject constructor(
             userPlaylistRepository.insertTrackToUserPlaylist(userPlaylistTrack)
             getUserPlaylistResponses(userPlaylistTrack.userId)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        _player.release()
     }
 }

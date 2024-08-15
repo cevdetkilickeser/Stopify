@@ -72,7 +72,10 @@ import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 @kotlin.OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MusicPlayerScreen(
-    startIndex: Int, playerTrackList: List<PlayerTrack>, userId: String, viewModel: VMMusicPlayer = hiltViewModel()
+    startIndex: Int,
+    playerTrackList: List<PlayerTrack>,
+    userId: String,
+    viewModel: VMMusicPlayer = hiltViewModel()
 ) {
     val context = LocalContext.current
     val isPlaying by viewModel.isPlaying.collectAsState()
@@ -85,7 +88,7 @@ fun MusicPlayerScreen(
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var newPlaylistName by remember { mutableStateOf("") }
-    var addedTrack by remember { mutableStateOf(currentTrack)}
+    var addedTrack by remember { mutableStateOf(currentTrack) }
 
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -93,9 +96,9 @@ fun MusicPlayerScreen(
     val sliderPosition = (currentPosition / 1000).toFloat()
     val sliderDuration = (duration / 1000).toFloat()
 
-    LaunchedEffect(startIndex, playerTrackList) {
+    LaunchedEffect(playerTrackList) {
         if (currentTrack == null) {
-            viewModel.getDownloads(playerTrackList[startIndex].trackId)
+            viewModel.getDownloads(userId, playerTrackList[startIndex].trackId)
             viewModel.load(startIndex, playerTrackList)
             viewModel.getUserPlaylistResponses(userId)
             viewModel.play()
@@ -161,7 +164,12 @@ fun MusicPlayerScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = {
-                        if (!isDownload) { viewModel.downloadSong(it) }
+                        if (!isDownload) {
+                            viewModel.downloadSong(it, userId)
+                        } else {
+                            val downloadId = viewModel.getDownloadId(userId, it.trackId)
+                            viewModel.deleteDownload(downloadId)
+                        }
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_download),
@@ -175,7 +183,7 @@ fun MusicPlayerScreen(
                         )
                     }
 
-                    Box{
+                    Box {
                         IconButton(
                             onClick = {
                                 expanded = true
@@ -192,7 +200,7 @@ fun MusicPlayerScreen(
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
-                            modifier = if (userPlaylistResponses.size < 10 ) {
+                            modifier = if (userPlaylistResponses.size < 10) {
                                 Modifier
                                     .background(color = Color.LightGray)
                             } else {
@@ -211,7 +219,10 @@ fun MusicPlayerScreen(
                                             fontWeight = FontWeight.Bold,
                                             modifier = Modifier.padding(horizontal = 4.dp)
                                         )
-                                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = null
+                                        )
                                     }
                                 },
                                 onClick = {
@@ -263,7 +274,10 @@ fun MusicPlayerScreen(
                                                 focusedContainerColor = Color.White,
                                                 unfocusedContainerColor = Color.White,
                                                 focusedSuffixColor = Color.Black,
-                                                selectionColors = TextSelectionColors(Color.Black, Color.Gray),
+                                                selectionColors = TextSelectionColors(
+                                                    Color.Black,
+                                                    Color.Gray
+                                                ),
                                                 focusedIndicatorColor = Color.Black
                                             )
                                         )
@@ -427,7 +441,11 @@ fun MusicPlayerScreen(
                     playerList = playerTrackList,
                     onClick = { playerTrack ->
                         if (playerTrack.trackId == currentTrack!!.trackId) {
-                            if (isPlaying) {viewModel.pause()} else {viewModel.play()}
+                            if (isPlaying) {
+                                viewModel.pause()
+                            } else {
+                                viewModel.play()
+                            }
                         } else {
                             viewModel.seekTo(playerTrackList.indexOf(playerTrack), 0L)
                         }
@@ -448,7 +466,8 @@ fun PlayerTrackList(
 ) {
     Column(
         modifier = Modifier
-            .background(color = Color.White)) {
+            .background(color = Color.White)
+    ) {
         Text(
             text = "Current Playlist",
             style = MaterialTheme.typography.labelLarge,
@@ -504,7 +523,11 @@ fun PlayerTrackItem(
         ) {
             Text(
                 text = playerTrack.trackTitle,
-                color = if (isCurrentTrack) {Color.Green} else {Color.Black},
+                color = if (isCurrentTrack) {
+                    Color.Green
+                } else {
+                    Color.Black
+                },
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
