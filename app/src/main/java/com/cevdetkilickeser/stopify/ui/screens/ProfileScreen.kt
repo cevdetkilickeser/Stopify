@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.model.playlist.UserPlaylistResponse
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
@@ -118,7 +119,7 @@ fun ProfileScreen(
                         UserPlaylistResponses(
                             userPlaylistResponses = userPlaylistResponses,
                             onClick = { userPlaylistResponse ->
-                                navController.navigate("user_playlist/${userPlaylistResponse.userPlaylistId}")
+                                navController.navigate("userPlaylist/${userPlaylistResponse.userPlaylistId}/${userPlaylistResponse.userPlaylistName.convertStandardCharsetsReplacePlusWithSpace()}")
                             }
                         )
                     }
