@@ -40,10 +40,11 @@ import com.cevdetkilickeser.stopify.convertStandardCharsets
 import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.json
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMLikes
-import com.google.gson.Gson
+import kotlinx.serialization.builtins.ListSerializer
 
 @Composable
 fun LikesScreen(
@@ -76,10 +77,10 @@ fun LikesScreen(
             } else {
                 LikeList(likeList = likeList, onLikeClick = { like ->
                     val playerTrackList = likeList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.trackPreview.convertStandardCharsets(),it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
-                    val playerTrackListGson = Gson().toJson(playerTrackList)
+                    val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), playerTrackList)
                     val playerTrack = playerTrackList.find { it.trackId == like.trackId }
                     val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-                    navController.navigate("player/$startIndex/$playerTrackListGson")
+                    navController.navigate("player/$startIndex/$playerTrackListJson")
                 },
                     onDeleteLikeClick = { like ->
                         viewModel.deleteLike(like)

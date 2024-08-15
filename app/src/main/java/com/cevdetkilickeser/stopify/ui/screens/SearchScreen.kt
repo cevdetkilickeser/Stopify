@@ -36,6 +36,7 @@ import com.cevdetkilickeser.stopify.convertStandardCharsets
 import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.json
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
@@ -46,8 +47,8 @@ import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryArtistList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryTrackList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.TrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
-import com.google.gson.Gson
 import kotlinx.coroutines.delay
+import kotlinx.serialization.builtins.ListSerializer
 
 @Composable
 fun SearchScreen(
@@ -130,10 +131,10 @@ fun SearchScreen(
                                 history.trackArtistName!!.convertStandardCharsetsReplacePlusWithSpace()
                             )
                         )
-                        val playerTrackListGson = Gson().toJson(playerTrackList)
+                        val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), playerTrackList)
                         val playerTrack = playerTrackList.find { it.trackId == history.trackId }
                         val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-                        navController.navigate("player/$startIndex/$playerTrackListGson")
+                        navController.navigate("player/$startIndex/$playerTrackListJson")
                     },
                     onDeleteHistoryClick = { history ->
                         viewModel.deleteHistory(history, selectedFilter)
@@ -194,11 +195,11 @@ fun SearchScreen(
                                             track.artist.name.convertStandardCharsetsReplacePlusWithSpace()
                                         )
                                     )
-                                    val playerTrackListGson = Gson().toJson(playerTrackList)
+                                    val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), playerTrackList)
                                     val playerTrack =
                                         playerTrackList.find { it.trackId == track.id }
                                     val startIndex = playerTrack.let { playerTrackList.indexOf(it) }
-                                    navController.navigate("player/$startIndex/$playerTrackListGson")
+                                    navController.navigate("player/$startIndex/$playerTrackListJson")
                                 }
                             )
 

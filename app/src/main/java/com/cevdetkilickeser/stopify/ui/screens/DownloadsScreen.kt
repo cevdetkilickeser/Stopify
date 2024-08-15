@@ -43,10 +43,11 @@ import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.json
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMDownloads
-import com.google.gson.Gson
+import kotlinx.serialization.builtins.ListSerializer
 
 @Composable
 fun DownloadsScreen(
@@ -84,10 +85,10 @@ fun DownloadsScreen(
                     likeList = likeList,
                     onClick = { download ->
                         val playerTrackList = downloadList.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.fileUri.convertStandardCharsets(), it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
-                        val playerTrackListGson = Gson().toJson(playerTrackList)
+                        val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), playerTrackList)
                         val playerTrack = playerTrackList.find { it.trackId == download.trackId }
                         val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-                        navController.navigate("player/$startIndex/$playerTrackListGson")
+                        navController.navigate("player/$startIndex/$playerTrackListJson")
                     },
                     onLikeClick = { download, isLike ->
                         if (isLike) {
