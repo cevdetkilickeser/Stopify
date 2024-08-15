@@ -34,7 +34,6 @@ class VMHome @Inject constructor(
     val isConnected: StateFlow<Boolean> = _isConnected
 
     init {
-        getGenreDataList()
         networkMonitor.startNetworkCallback()
         networkMonitor.onNetworkStatusChanged = { isConnected ->
             _errorState.value = null
