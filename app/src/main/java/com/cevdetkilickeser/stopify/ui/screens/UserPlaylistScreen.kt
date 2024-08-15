@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -39,48 +40,99 @@ import com.cevdetkilickeser.stopify.convertStandardCharsets
 import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
+import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.viewmodel.VMUserPlaylist
 import com.google.gson.Gson
 
 @Composable
-fun UserPlayListScreen(navController: NavController, userId: String, userPlaylistId:Int, viewModel: VMUserPlaylist = hiltViewModel()) {
+fun UserPlayListScreen(
+    navController: NavController,
+    userId: String,
+    userPlaylistId: Int,
+    userPlaylistName: String,
+    viewModel: VMUserPlaylist = hiltViewModel()
+) {
 
     val userPlaylist by viewModel.userPlaylistState.collectAsState()
+    val loadingState by viewModel.loadingState.collectAsState()
+    val errorState by viewModel.errorState.collectAsState()
 
     LaunchedEffect(userId, userPlaylistId) {
         viewModel.getUserPlaylist(userId, userPlaylistId)
     }
 
-    UserPlaylist(
-        userPlaylist = userPlaylist,
-        onClick = { userPlaylistTrack ->
-            val playerTrackList = userPlaylist.map { PlayerTrack(it.trackId,it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),it.trackPreview.convertStandardCharsets(),it.trackImage.convertStandardCharsets(),it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()) }
-            val playerTrackListGson = Gson().toJson(playerTrackList)
-            val playerTrack = playerTrackList.find { it.trackId == userPlaylistTrack.trackId }
-            val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
-            navController.navigate("player/$startIndex/$playerTrackListGson")
-        },
-        onDeleteClick = { userPlaylistTrack ->
-            viewModel.deleteUserPlaylistTrack(userPlaylistTrack)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Text(
+            text = userPlaylistName,
+            fontSize = 24.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        if (errorState.isNullOrEmpty()) {
+            if (loadingState) {
+                LoadingComponent()
+            } else {
+                UserPlaylist(
+                    userPlaylist = userPlaylist,
+                    onClick = { userPlaylistTrack ->
+                        val playerTrackList = userPlaylist.map {
+                            PlayerTrack(
+                                it.trackId,
+                                it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),
+                                it.trackPreview.convertStandardCharsets(),
+                                it.trackImage.convertStandardCharsets(),
+                                it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()
+                            )
+                        }
+                        val playerTrackListGson = Gson().toJson(playerTrackList)
+                        val playerTrack =
+                            playerTrackList.find { it.trackId == userPlaylistTrack.trackId }
+                        val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                        navController.navigate("player/$startIndex/$playerTrackListGson")
+                    },
+                    onDeleteClick = { userPlaylistTrack ->
+                        viewModel.deleteUserPlaylistTrack(userPlaylistTrack)
+                    }
+                )
+            }
+        } else {
+            ErrorScreen(errorMessage = errorState!!)
         }
-    )
+    }
 }
 
 @Composable
-fun UserPlaylist(userPlaylist: List<UserPlaylistTrack>, onClick: (UserPlaylistTrack) -> Unit, onDeleteClick: (UserPlaylistTrack) -> Unit) {
+fun UserPlaylist(
+    userPlaylist: List<UserPlaylistTrack>,
+    onClick: (UserPlaylistTrack) -> Unit,
+    onDeleteClick: (UserPlaylistTrack) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .background(color = Color.White)
             .fillMaxSize()
     ) {
         items(userPlaylist) { userPlaylistTrack ->
-            UserPlaylistItem(userPlaylistTrack = userPlaylistTrack, onClick = onClick, onDeleteClick = onDeleteClick)
+            UserPlaylistItem(
+                userPlaylistTrack = userPlaylistTrack,
+                onClick = onClick,
+                onDeleteClick = onDeleteClick
+            )
         }
     }
 }
 
 @Composable
-fun UserPlaylistItem(userPlaylistTrack: UserPlaylistTrack, onClick: (UserPlaylistTrack) -> Unit, onDeleteClick: (UserPlaylistTrack) -> Unit) {
+fun UserPlaylistItem(
+    userPlaylistTrack: UserPlaylistTrack,
+    onClick: (UserPlaylistTrack) -> Unit,
+    onDeleteClick: (UserPlaylistTrack) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
