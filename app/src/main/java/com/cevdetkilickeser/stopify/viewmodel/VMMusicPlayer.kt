@@ -15,10 +15,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.data.model.playlist.UserPlaylistResponse
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.DownloadRepository
 import com.cevdetkilickeser.stopify.repo.UserPlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @UnstableApi
@@ -34,6 +37,7 @@ class VMMusicPlayer @Inject constructor(
     application: Application,
     private val downloadRepository: DownloadRepository,
     private val userPlaylistRepository: UserPlaylistRepository,
+    private val networkMonitor: NetworkMonitor
 ) : AndroidViewModel(application) {
 
     private val downloadManager =
@@ -63,6 +67,9 @@ class VMMusicPlayer @Inject constructor(
     private val _isDownloadState = MutableStateFlow(false)
     val isDownloadState: StateFlow<Boolean> = _isDownloadState
 
+    private val _isDownloadInfoState = MutableStateFlow("")
+    val isDownloadInfoState: StateFlow<String> = _isDownloadInfoState
+
     private val _userPlaylistResponsesState =
         MutableStateFlow<List<UserPlaylistResponse>>(emptyList())
     val userPlaylistResponsesState: StateFlow<List<UserPlaylistResponse>> =
@@ -71,7 +78,16 @@ class VMMusicPlayer @Inject constructor(
     private val _nextUserPlaylistId = MutableStateFlow(0)
     val nextUserPlaylistId: StateFlow<Int> = _nextUserPlaylistId
 
+    private val _isConnected = MutableStateFlow(isInternetAvailable(application))
+    val isConnected: StateFlow<Boolean> = _isConnected
+
+
     init {
+        networkMonitor.startNetworkCallback()
+        networkMonitor.onNetworkStatusChanged = { isConnected ->
+            _isConnected.value = isConnected
+        }
+
         _player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 val url = mediaItem?.localConfiguration?.uri.toString()
@@ -193,7 +209,7 @@ class VMMusicPlayer @Inject constructor(
         }
     }
 
-    fun getDownloads(userId: String, trackId: String) {
+    fun getDownloadList(userId: String, trackId: String) {
         viewModelScope.launch {
             _downloadListState.value = downloadRepository.getDownloads(userId)
             _isDownloadState.value = _downloadListState.value.any { it.trackId == trackId }
@@ -210,20 +226,27 @@ class VMMusicPlayer @Inject constructor(
 
                 val downloadId = downloadManager.enqueue(request)
                 val fileUri: String? = getDownloadedFileUri(downloadManager, downloadId)
-                val download = Download(
-                    0,
-                    userId,
-                    fileUri,
-                    playerTrack.trackId,
-                    playerTrack.trackPreview,
-                    playerTrack.trackTitle,
-                    playerTrack.trackImage,
-                    playerTrack.trackArtistName
-                )
-                downloadRepository.insertDownload(download)
-                getDownloads(userId, playerTrack.trackId)
+                val download = fileUri?.let {
+                    Download(
+                        0,
+                        userId,
+                        it,
+                        playerTrack.trackId,
+                        playerTrack.trackPreview,
+                        playerTrack.trackTitle,
+                        playerTrack.trackImage,
+                        playerTrack.trackArtistName
+                    )
+                }
+                downloadRepository.insertDownload(download!!)
+                getDownloadList(userId, playerTrack.trackId)
+                _isDownloadInfoState.value = "Downloaded"
+                delay(1000)
+                _isDownloadInfoState.value = ""
             } catch (e: Exception) {
-                Log.e("şşş", "Hata")
+                _isDownloadInfoState.value = "Could Not download"
+                delay(1000)
+                _isDownloadInfoState.value = ""
             }
         }
     }
@@ -243,12 +266,26 @@ class VMMusicPlayer @Inject constructor(
         return null
     }
 
-    fun deleteDownload(downloadId: Long) {
+    fun deleteDownload(userId: String, trackId: String, downloadId: Long, fileUri: String) {
+        val file = Uri.parse(fileUri).path?.let { File(it) }
+        if (file != null) {
+            if (file.exists()) {
+                println("exist")
+                file.delete()
+            }
+        }
         downloadManager.remove(downloadId)
+        viewModelScope.launch {
+            downloadRepository.deleteDownload(Download(downloadId,"","","","","","",""))
+            getDownloadList(userId, trackId)
+            _isDownloadInfoState.value = "Deleted"
+            delay(1000)
+            _isDownloadInfoState.value = ""
+        }
     }
 
-    fun getDownloadId(userId: String, trackId: String): Long {
-        return _downloadListState.value.find { it.trackId == trackId && it.userId == userId }!!.downloadId
+    fun getSingleDownload(userId: String, trackId: String): Download {
+        return _downloadListState.value.find { it.trackId == trackId && it.userId == userId }!!
     }
 
     fun getUserPlaylistResponses(userId: String) {
@@ -281,5 +318,6 @@ class VMMusicPlayer @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         _player.release()
+        networkMonitor.stopNetworkCallback()
     }
 }

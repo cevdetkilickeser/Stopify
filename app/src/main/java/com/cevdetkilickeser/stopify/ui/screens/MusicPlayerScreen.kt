@@ -78,6 +78,7 @@ fun MusicPlayerScreen(
     viewModel: VMMusicPlayer = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val isConnected by viewModel.isConnected.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPosition by viewModel.currentPosition.collectAsState()
     val duration by viewModel.duration.collectAsState()
@@ -85,6 +86,7 @@ fun MusicPlayerScreen(
     val currentTrack by viewModel.currentTrack.collectAsState()
     val userPlaylistResponses by viewModel.userPlaylistResponsesState.collectAsState()
     val nextUserPlaylistId by viewModel.nextUserPlaylistId.collectAsState()
+    val downloadInfo by viewModel.isDownloadInfoState.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var newPlaylistName by remember { mutableStateOf("") }
@@ -98,7 +100,7 @@ fun MusicPlayerScreen(
 
     LaunchedEffect(playerTrackList) {
         if (currentTrack == null) {
-            viewModel.getDownloads(userId, playerTrackList[startIndex].trackId)
+            viewModel.getDownloadList(userId, playerTrackList[startIndex].trackId)
             viewModel.load(startIndex, playerTrackList)
             viewModel.getUserPlaylistResponses(userId)
             viewModel.play()
@@ -163,24 +165,36 @@ fun MusicPlayerScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = {
-                        if (!isDownload) {
-                            viewModel.downloadSong(it, userId)
-                        } else {
-                            val downloadId = viewModel.getDownloadId(userId, it.trackId)
-                            viewModel.deleteDownload(downloadId)
-                        }
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_download),
-                            contentDescription = "Download",
-                            tint = if (isDownload) {
-                                Color.Green
-                            } else {
-                                Color.Black
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = {
+                                if (!isDownload) {
+                                    viewModel.downloadSong(it, userId)
+                                } else {
+                                    val download = viewModel.getSingleDownload(userId, it.trackId)
+                                    viewModel.deleteDownload(userId, it.trackId, download.downloadId, download.fileUri)
+                                }
                             },
-                            modifier = Modifier.size(32.dp)
-                        )
+                            enabled = if (!isDownload) isConnected else true
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_download),
+                                contentDescription = "Download",
+                                tint = if (isDownload) {
+                                    Color.Green
+                                } else {
+                                    if (isConnected){
+                                        Color.Black
+                                    } else {
+                                        Color.Gray
+                                    }
+                                },
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        if (downloadInfo.isNotEmpty()){
+                            Text(text = downloadInfo)
+                        }
                     }
 
                     Box {
