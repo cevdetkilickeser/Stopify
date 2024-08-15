@@ -56,7 +56,6 @@ class VMDownloads @Inject constructor(
         val file = Uri.parse(fileUri).path?.let { File(it) }
         file?.let {
             if (it.exists()) {
-                println("exist")
                 it.delete()
             }
         }
