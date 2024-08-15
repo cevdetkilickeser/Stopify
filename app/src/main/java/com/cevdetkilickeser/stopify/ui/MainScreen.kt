@@ -307,7 +307,7 @@ fun MyNavHost(navController: NavHostController, userId: String?, innerPadding: P
             val playerTrackListJson =
                 navBackStackEntry.arguments?.getString("playerTrackList") ?: return@composable
             val playerTrackList = json.decodeFromString<List<PlayerTrack>>(playerTrackListJson)
-            MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList, playerTrackListJson = playerTrackListJson, userId = userId!!)
+            MusicPlayerScreen(startIndex = startIndex, playerTrackList = playerTrackList, userId = userId!!)
         }
         composable("downloads") {
             DownloadsScreen(navController = navController, userId = userId!!)

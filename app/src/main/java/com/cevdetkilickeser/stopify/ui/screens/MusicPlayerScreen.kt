@@ -101,8 +101,8 @@ fun MusicPlayerScreen(
     LaunchedEffect(playerTrackList) {
         if (currentTrack == null) {
             viewModel.getDownloadList(userId, playerTrackList[startIndex].trackId)
-            viewModel.load(startIndex, playerTrackList)
             viewModel.getUserPlaylistResponses(userId)
+            viewModel.load(startIndex, playerTrackList)
             viewModel.play()
         }
     }
@@ -172,7 +172,7 @@ fun MusicPlayerScreen(
                                     viewModel.downloadSong(it, userId)
                                 } else {
                                     val download = viewModel.getSingleDownload(userId, it.trackId)
-                                    viewModel.deleteDownload(userId, it.trackId, download.downloadId, download.fileUri)
+                                    viewModel.deleteDownload(userId, it.trackId, download.downloadId, download.fileUri, context)
                                 }
                             },
                             enabled = if (!isDownload) isConnected else true
