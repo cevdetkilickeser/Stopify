@@ -34,7 +34,8 @@ class VMLikes @Inject constructor(
     fun getLikes(userId: String) {
         viewModelScope.launch {
             try {
-                _playerTrackListState.value = likeRepository.getLikes(userId)
+                _likeListState.value = likeRepository.getLikes(userId)
+                _playerTrackListState.value = _likeListState.value
                     .sortedByDescending { it.likeId }
                     .map {PlayerTrack(
                         it.trackId,
