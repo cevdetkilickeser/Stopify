@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -111,7 +112,16 @@ class VMMusicPlayer @Inject constructor(
                     Player.STATE_IDLE -> {}
                 }
             }
+
+            override fun onPlayerError(error: PlaybackException) {
+                retryPlaying(_player)
+            }
         })
+    }
+
+    private fun retryPlaying(player: ExoPlayer) {
+        player.prepare()
+        player.play()
     }
 
     fun load(startIndex: Int, playerTrackList: List<PlayerTrack>) {
