@@ -183,7 +183,7 @@ fun SearchScreen(
                     } else {
                         when (selectedFilter) {
                             "Track" -> TrackList(
-                                likeIcon = true,
+                                likeIcon = false,
                                 deleteIcon = false,
                                 playerTrackList = playerTrackList,
                                 likeList = emptyList(),
