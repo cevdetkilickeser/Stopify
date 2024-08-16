@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.History
+import com.cevdetkilickeser.stopify.data.model.album.Album
+import com.cevdetkilickeser.stopify.data.model.artist.Artist
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
-import com.cevdetkilickeser.stopify.data.model.search.AlbumData
-import com.cevdetkilickeser.stopify.data.model.search.ArtistData
 import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.HistoryRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
@@ -29,20 +29,20 @@ class VMSearch @Inject constructor(
     private val _playerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
     val playerTrackListState: StateFlow<List<PlayerTrack>> = _playerTrackListState
 
-    private val _artistListState = MutableStateFlow<List<ArtistData>>(emptyList())
-    val artistListState: StateFlow<List<ArtistData>> = _artistListState
-
-    private val _albumListState = MutableStateFlow<List<AlbumData>>(emptyList())
-    val albumListState: StateFlow<List<AlbumData>> = _albumListState
-
     private val _historyPlayerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
     val historyPlayerTrackListState: StateFlow<List<PlayerTrack>> = _historyPlayerTrackListState
 
-    private val _historyArtistListState = MutableStateFlow<List<History>>(emptyList())
-    val historyArtistListState: StateFlow<List<History>> = _historyArtistListState
+    private val _artistListState = MutableStateFlow<List<Artist>>(emptyList())
+    val artistListState: StateFlow<List<Artist>> = _artistListState
 
-    private val _historyAlbumListState = MutableStateFlow<List<History>>(emptyList())
-    val historyAlbumListState: StateFlow<List<History>> = _historyAlbumListState
+    private val _historyArtistListState = MutableStateFlow<List<Artist>>(emptyList())
+    val historyArtistListState: StateFlow<List<Artist>> = _historyArtistListState
+
+    private val _albumListState = MutableStateFlow<List<Album>>(emptyList())
+    val albumListState: StateFlow<List<Album>> = _albumListState
+
+    private val _historyAlbumListState = MutableStateFlow<List<Album>>(emptyList())
+    val historyAlbumListState: StateFlow<List<Album>> = _historyAlbumListState
 
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
@@ -72,7 +72,7 @@ class VMSearch @Inject constructor(
                         "Album" -> getSearchByAlbumResponse(searchQuery)
                     }
                     _loadingState.value = false
-                } catch (e:Exception){
+                } catch (e: Exception) {
                     _errorState.value = getApplication<Application>().getString(R.string.error)
                 }
             } else {
@@ -110,8 +110,14 @@ class VMSearch @Inject constructor(
     private fun getSearchByArtistResponse(query: String) {
         viewModelScope.launch {
             try {
-                val artistList = serviceRepository.getSearchByArtistResponse(query)
-                _artistListState.value = artistList
+                _artistListState.value = serviceRepository.getSearchByArtistResponse(query)
+                    .map {
+                        Artist(
+                            it.id,
+                            it.name,
+                            it.pictureXl
+                        )
+                    }
             } catch (e: Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)
             }
@@ -121,8 +127,15 @@ class VMSearch @Inject constructor(
     private fun getSearchByAlbumResponse(query: String) {
         viewModelScope.launch {
             try {
-                val albumList = serviceRepository.getSearchByAlbumResponse(query)
-                _albumListState.value = albumList
+                _albumListState.value = serviceRepository.getSearchByAlbumResponse(query)
+                    .map {
+                        Album(
+                            it.id,
+                            it.title,
+                            it.coverXl,
+                            it.artist.name
+                        )
+                    }
             } catch (e: Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)
             }
@@ -133,24 +146,42 @@ class VMSearch @Inject constructor(
         viewModelScope.launch {
             try {
                 when (selectedFilter) {
-                    "Track" -> _historyPlayerTrackListState.value = historyRepository.getTrackHistory()
+                    "Track" -> _historyPlayerTrackListState.value =
+                        historyRepository.getTrackHistory()
+                            .sortedByDescending { it.historyId }
+                            .map {
+                                PlayerTrack(
+                                    it.trackId!!,
+                                    it.trackTitle!!,
+                                    it.trackPreview!!,
+                                    it.trackImage!!,
+                                    it.trackArtistName!!,
+                                    historyId = it.historyId
+                                )
+                            }
+
+                    "Artist" -> _historyArtistListState.value = historyRepository.getArtistHistory()
                         .sortedByDescending { it.historyId }
                         .map {
-                            PlayerTrack(
-                                it.trackId!!,
-                                it.trackTitle!!,
-                                it.trackPreview!!,
-                                it.trackImage!!,
-                                it.trackArtistName!!,
-                                historyId = it.historyId
+                            Artist(
+                                it.artistId!!,
+                                it.artistName!!,
+                                it.artistImage!!,
+                                it.historyId
                             )
                         }
 
-                    "Artist" -> _historyArtistListState.value =
-                        historyRepository.getArtistHistory().sortedByDescending { it.historyId }
-
-                    "Album" -> _historyAlbumListState.value =
-                        historyRepository.getAlbumHistory().sortedByDescending { it.historyId }
+                    "Album" -> _historyAlbumListState.value = historyRepository.getAlbumHistory()
+                        .sortedByDescending { it.historyId }
+                        .map {
+                            Album(
+                                it.albumId!!,
+                                it.albumTitle!!,
+                                it.albumImage!!,
+                                it.albumArtistName!!,
+                                it.historyId
+                            )
+                        }
                 }
             } catch (e: Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)

@@ -39,11 +39,9 @@ import com.cevdetkilickeser.stopify.preparePlayerTrackListForRoute
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
+import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.AlbumList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.ArtistList
-import com.cevdetkilickeser.stopify.ui.component.TrackList
-import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryAlbumList
-import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryArtistList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
 import kotlinx.serialization.builtins.ListSerializer
 
@@ -123,7 +121,10 @@ fun SearchScreen(
                     likeList = emptyList(),
                     onTrackClick = { track ->
                         val historyTrack = listOf(track)
-                        val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), historyTrack.preparePlayerTrackListForRoute())
+                        val playerTrackListJson = json.encodeToString(
+                            ListSerializer(PlayerTrack.serializer()),
+                            historyTrack.preparePlayerTrackListForRoute()
+                        )
                         val startIndex = 0
                         navController.navigate("player/$startIndex/$playerTrackListJson")
                     },
@@ -138,21 +139,37 @@ fun SearchScreen(
                     }
                 )
 
-                "Artist" -> HistoryArtistList(historyList = historyArtistList,
-                    onHistoryClick = { history ->
-                        navController.navigate("artist/${history.artistId}")
+                "Artist" -> ArtistList(
+                    deleteIcon = true,
+                    artistList = historyArtistList,
+                    onClick = { artist ->
+                        navController.navigate("artist/${artist.id}")
                     },
-                    onDeleteHistoryClick = { history ->
-                        viewModel.deleteHistory(history, selectedFilter)
+                    onDeleteClick = { artist ->
+                        viewModel.deleteHistory(
+                            History(
+                                artist.historyId!!,
+                                userId
+                            ),
+                            selectedFilter
+                        )
                     }
                 )
 
-                "Album" -> HistoryAlbumList(historyList = historyAlbumList,
-                    onHistoryClick = { history ->
-                        navController.navigate("album/${history.albumId}")
+                "Album" -> AlbumList(
+                    deleteIcon = true,
+                    albumList = historyAlbumList,
+                    onClick = { album ->
+                        navController.navigate("album/${album.id}")
                     },
-                    onDeleteHistoryClick = { history ->
-                        viewModel.deleteHistory(history, selectedFilter)
+                    onDeleteClick = { album ->
+                        viewModel.deleteHistory(
+                            History(
+                                album.historyId!!,
+                                userId
+                            ),
+                            selectedFilter
+                        )
                     }
                 )
             }
@@ -172,10 +189,14 @@ fun SearchScreen(
                                 likeList = emptyList(),
                                 onTrackClick = { track ->
                                     val searchedTrack = listOf(track)
-                                    val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), searchedTrack.preparePlayerTrackListForRoute())
+                                    val playerTrackListJson = json.encodeToString(
+                                        ListSerializer(PlayerTrack.serializer()),
+                                        searchedTrack.preparePlayerTrackListForRoute()
+                                    )
                                     val startIndex = 0
                                     navController.navigate("player/$startIndex/$playerTrackListJson")
-                                    val isHistory = historyPlayerTrackList.any { it.trackId == track.trackId }
+                                    val isHistory =
+                                        historyPlayerTrackList.any { it.trackId == track.trackId }
                                     if (!isHistory) {
                                         viewModel.insertHistory(
                                             History(
@@ -193,10 +214,11 @@ fun SearchScreen(
                             )
 
                             "Artist" -> ArtistList(
+                                deleteIcon = false,
                                 artistList = searchByArtistResults,
-                                onArtistClick = { artist ->
+                                onClick = { artist ->
                                     val isHistory =
-                                        historyArtistList.any { it.artistId == artist.id }
+                                        historyArtistList.any { it.id == artist.id }
                                     if (!isHistory) {
                                         viewModel.insertHistory(
                                             History(
@@ -204,7 +226,7 @@ fun SearchScreen(
                                                 userId = userId,
                                                 artistId = artist.id,
                                                 artistName = artist.name,
-                                                artistImage = artist.picture
+                                                artistImage = artist.image
                                             )
                                         )
                                     }
@@ -213,9 +235,10 @@ fun SearchScreen(
                             )
 
                             "Album" -> AlbumList(
+                                deleteIcon = false,
                                 albumList = searchByAlbumResults,
-                                onAlbumClick = { album ->
-                                    val isHistory = historyAlbumList.any { it.albumId == album.id }
+                                onClick = { album ->
+                                    val isHistory = historyAlbumList.any { it.id == album.id }
                                     if (!isHistory) {
                                         viewModel.insertHistory(
                                             History(
@@ -223,8 +246,8 @@ fun SearchScreen(
                                                 userId = userId,
                                                 albumId = album.id,
                                                 albumTitle = album.title,
-                                                albumImage = album.coverXl,
-                                                albumArtistName = album.artist.name
+                                                albumImage = album.image,
+                                                albumArtistName = album.artist
                                             )
                                         )
                                     }

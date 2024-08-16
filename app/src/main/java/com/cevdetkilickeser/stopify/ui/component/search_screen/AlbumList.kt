@@ -3,6 +3,7 @@ package com.cevdetkilickeser.stopify.ui.component.search_screen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,52 +28,79 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
-import com.cevdetkilickeser.stopify.data.model.search.AlbumData
+import com.cevdetkilickeser.stopify.data.model.album.Album
 
 
 @Composable
-fun AlbumList(albumList: List<AlbumData>, onAlbumClick: (AlbumData) -> Unit) {
+fun AlbumList(
+    deleteIcon: Boolean,
+    albumList: List<Album>,
+    onClick: (Album) -> Unit,
+    onDeleteClick: (Album) -> Unit = { _ -> }
+) {
     LazyColumn(
         modifier = Modifier
             .background(color = Color.White)
     ) {
         items(albumList) { album ->
-            AlbumtItem(album = album, onAlbumClick = onAlbumClick)
+            AlbumtItem(
+                deleteIcon = deleteIcon,
+                album = album,
+                onClick = onClick,
+                onDeleteClick = onDeleteClick
+            )
         }
     }
 }
 
 @Composable
-fun AlbumtItem(album: AlbumData, onAlbumClick: (AlbumData) -> Unit) {
+fun AlbumtItem(
+    deleteIcon: Boolean,
+    album: Album,
+    onClick: (Album) -> Unit,
+    onDeleteClick: (Album) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .clickable { onAlbumClick(album) },
-        verticalAlignment = Alignment.CenterVertically
+            .clickable { onClick(album) },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = album.coverXl,
-                error = painterResource(id = R.drawable.ic_play),
-                fallback = painterResource(id = R.drawable.ic_play)
-            ),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                text = album.title,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 8.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = album.image,
+                    error = painterResource(id = R.drawable.ic_play),
+                    fallback = painterResource(id = R.drawable.ic_play)
+                ),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(64.dp)
             )
-            Text(
-                text = album.artist.name,
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text(
+                    text = album.title,
+                    maxLines = 2,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 8.dp).width(200.dp)
+                )
+                Text(
+                    text = album.artist,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
+        }
+        if (deleteIcon) {
+            IconButton(onClick = { onDeleteClick(album) }) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+            }
         }
     }
 }
