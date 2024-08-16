@@ -73,6 +73,7 @@ fun ArtistScreen(
                         contentDescription = "Artist Image",
                         modifier = Modifier
                             .size(200.dp)
+                            .padding(top = 16.dp)
                     )
 
                     Text(text = artist!!.name, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
