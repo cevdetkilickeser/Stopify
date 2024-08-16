@@ -112,7 +112,7 @@ fun GenreCard(genreData: GenreData, onClick: (GenreData) ->  Unit) {
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = genreData.picture,
+                    model = genreData.pictureXl,
                     error = painterResource(id = R.drawable.ic_play),
                     fallback = painterResource(id = R.drawable.ic_play)
                 ),
