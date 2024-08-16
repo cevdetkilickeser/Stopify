@@ -34,7 +34,7 @@ create personalized playlists, and download songs for offline listening.
 - Room
 - Coroutines
 - Hilt
-- Network Manager
+- Connectivity Manager
 - Download Manager
 - Firebase Auth
 - Coil
