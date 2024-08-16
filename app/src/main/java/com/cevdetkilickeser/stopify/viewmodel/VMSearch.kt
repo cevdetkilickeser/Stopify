@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.History
-import com.cevdetkilickeser.stopify.data.model.playlist.Track
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.data.model.search.AlbumData
 import com.cevdetkilickeser.stopify.data.model.search.ArtistData
 import com.cevdetkilickeser.stopify.isInternetAvailable
@@ -26,8 +26,8 @@ class VMSearch @Inject constructor(
     private val historyRepository: HistoryRepository
 ) : AndroidViewModel(application) {
 
-    private val _trackListState = MutableStateFlow<List<Track>>(emptyList())
-    val trackListState: StateFlow<List<Track>> = _trackListState
+    private val _playerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val playerTrackListState: StateFlow<List<PlayerTrack>> = _playerTrackListState
 
     private val _artistListState = MutableStateFlow<List<ArtistData>>(emptyList())
     val artistListState: StateFlow<List<ArtistData>> = _artistListState
@@ -35,8 +35,8 @@ class VMSearch @Inject constructor(
     private val _albumListState = MutableStateFlow<List<AlbumData>>(emptyList())
     val albumListState: StateFlow<List<AlbumData>> = _albumListState
 
-    private val _historyTrackListState = MutableStateFlow<List<History>>(emptyList())
-    val historyTrackListState: StateFlow<List<History>> = _historyTrackListState
+    private val _historyPlayerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val historyPlayerTrackListState: StateFlow<List<PlayerTrack>> = _historyPlayerTrackListState
 
     private val _historyArtistListState = MutableStateFlow<List<History>>(emptyList())
     val historyArtistListState: StateFlow<List<History>> = _historyArtistListState
@@ -81,25 +81,33 @@ class VMSearch @Inject constructor(
         }
     }
 
-    fun clearSearchResult() {
-        _trackListState.value = emptyList()
+    private fun clearSearchResult() {
+        _playerTrackListState.value = emptyList()
         _artistListState.value = emptyList()
         _albumListState.value = emptyList()
     }
 
-    fun getSearchResponse(query: String) {
+    private fun getSearchResponse(query: String) {
         viewModelScope.launch {
             try {
-                val trackList = serviceRepository.getSearchResponse(query)
+                _playerTrackListState.value = serviceRepository.getSearchResponse(query)
                     .filter { track -> track.preview.isNotEmpty() }
-                _trackListState.value = trackList
+                    .map {
+                        PlayerTrack(
+                            it.id,
+                            it.title,
+                            it.preview,
+                            it.album.coverXl,
+                            it.artist.name
+                        )
+                    }
             } catch (e: Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)
             }
         }
     }
 
-    fun getSearchByArtistResponse(query: String) {
+    private fun getSearchByArtistResponse(query: String) {
         viewModelScope.launch {
             try {
                 val artistList = serviceRepository.getSearchByArtistResponse(query)
@@ -110,7 +118,7 @@ class VMSearch @Inject constructor(
         }
     }
 
-    fun getSearchByAlbumResponse(query: String) {
+    private fun getSearchByAlbumResponse(query: String) {
         viewModelScope.launch {
             try {
                 val albumList = serviceRepository.getSearchByAlbumResponse(query)
@@ -125,8 +133,18 @@ class VMSearch @Inject constructor(
         viewModelScope.launch {
             try {
                 when (selectedFilter) {
-                    "Track" -> _historyTrackListState.value =
-                        historyRepository.getTrackHistory().sortedByDescending { it.historyId }
+                    "Track" -> _historyPlayerTrackListState.value = historyRepository.getTrackHistory()
+                        .sortedByDescending { it.historyId }
+                        .map {
+                            PlayerTrack(
+                                it.trackId!!,
+                                it.trackTitle!!,
+                                it.trackPreview!!,
+                                it.trackImage!!,
+                                it.trackArtistName!!,
+                                historyId = it.historyId
+                            )
+                        }
 
                     "Artist" -> _historyArtistListState.value =
                         historyRepository.getArtistHistory().sortedByDescending { it.historyId }

@@ -32,22 +32,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.cevdetkilickeser.stopify.convertStandardCharsets
-import com.cevdetkilickeser.stopify.convertStandardCharsetsReplacePlusWithSpace
 import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.json
+import com.cevdetkilickeser.stopify.preparePlayerTrackListForRoute
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.ui.component.search_screen.AlbumList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.ArtistList
+import com.cevdetkilickeser.stopify.ui.component.TrackList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryAlbumList
 import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryArtistList
-import com.cevdetkilickeser.stopify.ui.component.search_screen.HistoryTrackList
-import com.cevdetkilickeser.stopify.ui.component.search_screen.TrackList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
-import kotlinx.coroutines.delay
 import kotlinx.serialization.builtins.ListSerializer
 
 @Composable
@@ -57,10 +54,10 @@ fun SearchScreen(
     viewModel: VMSearch = hiltViewModel()
 ) {
 
-    val searchResults by viewModel.trackListState.collectAsState()
+    val playerTrackList by viewModel.playerTrackListState.collectAsState()
     val searchByArtistResults by viewModel.artistListState.collectAsState()
     val searchByAlbumResults by viewModel.albumListState.collectAsState()
-    val historyTrackList by viewModel.historyTrackListState.collectAsState()
+    val historyPlayerTrackList by viewModel.historyPlayerTrackListState.collectAsState()
     val historyArtistList by viewModel.historyArtistListState.collectAsState()
     val historyAlbumList by viewModel.historyAlbumListState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
@@ -110,34 +107,34 @@ fun SearchScreen(
                 selectedFilter = selectedFilter,
                 onFilterSelected = { option ->
                     selectedFilter = option
+                    viewModel.getHistory(selectedFilter)
+                    viewModel.search(searchQuery, selectedFilter)
                 },
-                filterOptions = filterOptions,
-                searchQuery = searchQuery,
-                viewModel = viewModel
+                filterOptions = filterOptions
             )
         }
 
         if (searchQuery.isEmpty()) {
             when (selectedFilter) {
-                "Track" -> HistoryTrackList(
-                    historyList = historyTrackList,
-                    onHistoryClick = { history ->
-                        val playerTrackList = listOf(
-                            PlayerTrack(
-                                history.trackId!!,
-                                history.trackTitle!!.convertStandardCharsetsReplacePlusWithSpace(),
-                                history.trackPreview!!.convertStandardCharsets(),
-                                history.trackImage!!.convertStandardCharsets(),
-                                history.trackArtistName!!.convertStandardCharsetsReplacePlusWithSpace()
-                            )
-                        )
-                        val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), playerTrackList)
-                        val playerTrack = playerTrackList.find { it.trackId == history.trackId }
-                        val startIndex = playerTrack?.let { playerTrackList.indexOf(it) } ?: 0
+                "Track" -> TrackList(
+                    likeIcon = false,
+                    deleteIcon = true,
+                    playerTrackList = historyPlayerTrackList,
+                    likeList = emptyList(),
+                    onTrackClick = { track ->
+                        val historyTrack = listOf(track)
+                        val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), historyTrack.preparePlayerTrackListForRoute())
+                        val startIndex = 0
                         navController.navigate("player/$startIndex/$playerTrackListJson")
                     },
-                    onDeleteHistoryClick = { history ->
-                        viewModel.deleteHistory(history, selectedFilter)
+                    onDeleteClick = { track ->
+                        viewModel.deleteHistory(
+                            History(
+                                track.historyId!!,
+                                userId
+                            ),
+                            selectedFilter
+                        )
                     }
                 )
 
@@ -169,37 +166,29 @@ fun SearchScreen(
                     } else {
                         when (selectedFilter) {
                             "Track" -> TrackList(
-                                isSearch = true,
-                                trackList = searchResults,
+                                likeIcon = true,
+                                deleteIcon = false,
+                                playerTrackList = playerTrackList,
+                                likeList = emptyList(),
                                 onTrackClick = { track ->
-                                    val isHistory = historyTrackList.any { it.trackId == track.id }
+                                    val searchedTrack = listOf(track)
+                                    val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), searchedTrack.preparePlayerTrackListForRoute())
+                                    val startIndex = 0
+                                    navController.navigate("player/$startIndex/$playerTrackListJson")
+                                    val isHistory = historyPlayerTrackList.any { it.trackId == track.trackId }
                                     if (!isHistory) {
                                         viewModel.insertHistory(
                                             History(
                                                 historyId = 0,
                                                 userId = userId,
-                                                trackId = track.id,
-                                                trackTitle = track.title,
-                                                trackImage = track.album.coverXl,
-                                                trackArtistName = track.artist.name,
-                                                trackPreview = track.preview
+                                                trackId = track.trackId,
+                                                trackTitle = track.trackTitle,
+                                                trackImage = track.trackImage,
+                                                trackArtistName = track.trackArtistName,
+                                                trackPreview = track.trackPreview
                                             )
                                         )
                                     }
-                                    val playerTrackList = listOf(
-                                        PlayerTrack(
-                                            track.id,
-                                            track.title.convertStandardCharsetsReplacePlusWithSpace(),
-                                            track.preview.convertStandardCharsets(),
-                                            track.album.coverXl.convertStandardCharsets(),
-                                            track.artist.name.convertStandardCharsetsReplacePlusWithSpace()
-                                        )
-                                    )
-                                    val playerTrackListJson = json.encodeToString(ListSerializer(PlayerTrack.serializer()), playerTrackList)
-                                    val playerTrack =
-                                        playerTrackList.find { it.trackId == track.id }
-                                    val startIndex = playerTrack.let { playerTrackList.indexOf(it) }
-                                    navController.navigate("player/$startIndex/$playerTrackListJson")
                                 }
                             )
 
@@ -256,9 +245,7 @@ fun SearchScreen(
 fun QueryFilter(
     selectedFilter: String,
     onFilterSelected: (String) -> Unit,
-    filterOptions: List<String>,
-    searchQuery: String,
-    viewModel: VMSearch
+    filterOptions: List<String>
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -276,27 +263,14 @@ fun QueryFilter(
             modifier = Modifier.background(color = Color.LightGray)
         ) {
             filterOptions.forEach { option ->
-                DropdownMenuItem(text = { Text(text = option) }, onClick = {
-                    onFilterSelected(option)
-                    expanded = false
-                    viewModel.getHistory(selectedFilter)
-                    viewModel.search(searchQuery, selectedFilter)
-                })
+                DropdownMenuItem(
+                    text = { Text(text = option) },
+                    onClick = {
+                        onFilterSelected(option)
+                        expanded = false
+                    }
+                )
             }
         }
-    }
-}
-
-
-suspend fun search(searchQuery: String, selectedFilter: String, viewModel: VMSearch) {
-    if (searchQuery.isNotEmpty()) {
-        delay(1000)
-        when (selectedFilter) {
-            "Track" -> viewModel.getSearchResponse(searchQuery)
-            "Artist" -> viewModel.getSearchByArtistResponse(searchQuery)
-            "Album" -> viewModel.getSearchByAlbumResponse(searchQuery)
-        }
-    } else {
-        viewModel.clearSearchResult()
     }
 }

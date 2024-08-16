@@ -7,6 +7,7 @@ import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.album.AlbumResponse
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
@@ -26,6 +27,9 @@ class VMAlbum @Inject constructor(
 
     private val _albumState = MutableStateFlow<AlbumResponse?>(null)
     val albumState: StateFlow<AlbumResponse?> = _albumState
+
+    private val _playerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val playerTrackListState: StateFlow<List<PlayerTrack>> = _playerTrackListState
 
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
@@ -52,6 +56,17 @@ class VMAlbum @Inject constructor(
             try {
                 _loadingState.value = true
                 _albumState.value = serviceRepository.getAlbumResponse(albumId)
+                _playerTrackListState.value = _albumState.value!!.tracks.trackDataList
+                    .filter { track -> track.preview.isNotEmpty() }
+                    .map {
+                        PlayerTrack(
+                            it.id,
+                            it.title,
+                            it.preview,
+                            it.trackDataAlbum.coverXl,
+                            it.trackDataArtist.name
+                        )
+                    }
                 _loadingState.value = false
             } catch (e: Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)

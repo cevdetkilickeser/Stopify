@@ -3,6 +3,7 @@ package com.cevdetkilickeser.stopify
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import kotlinx.serialization.json.Json
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -13,6 +14,18 @@ fun String.convertStandardCharsets(): String {
 
 fun String.convertStandardCharsetsReplacePlusWithSpace(): String {
     return URLEncoder.encode(this, StandardCharsets.UTF_8.name()).replace("+"," ")
+}
+
+fun List<PlayerTrack>.preparePlayerTrackListForRoute(): List<PlayerTrack> {
+    return this.map {
+        PlayerTrack(
+            it.trackId,
+            it.trackTitle.convertStandardCharsetsReplacePlusWithSpace(),
+            it.trackPreview.convertStandardCharsets(),
+            it.trackImage.convertStandardCharsets(),
+            it.trackArtistName.convertStandardCharsetsReplacePlusWithSpace()
+        )
+    }
 }
 
 fun isInternetAvailable(context: Context): Boolean {

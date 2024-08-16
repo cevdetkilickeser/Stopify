@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.NetworkMonitor
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
-import com.cevdetkilickeser.stopify.data.model.playlist.Track
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import com.cevdetkilickeser.stopify.repo.ServiceRepository
@@ -24,8 +24,8 @@ class VMPlaylist @Inject constructor(
     private val networkMonitor: NetworkMonitor
 ) : AndroidViewModel(application) {
 
-    private val _trackListState = MutableStateFlow<List<Track>>(emptyList())
-    val trackListState: StateFlow<List<Track>> = _trackListState
+    private val _playerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val playerTrackListState: StateFlow<List<PlayerTrack>> = _playerTrackListState
 
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
@@ -51,8 +51,17 @@ class VMPlaylist @Inject constructor(
         viewModelScope.launch {
             try {
                 _loadingState.value = true
-                _trackListState.value = serviceRepository.getTrackList(playlistId)
+                _playerTrackListState.value = serviceRepository.getTrackList(playlistId)
                     .filter { track -> track.preview.isNotEmpty() }
+                    .map {
+                        PlayerTrack(
+                            it.id,
+                            it.title,
+                            it.preview,
+                            it.album.coverXl,
+                            it.artist.name
+                        )
+                    }
                 _loadingState.value = false
             } catch (e: Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)

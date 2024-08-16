@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,9 @@ class VMLikes @Inject constructor(
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
 
+    private val _playerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val playerTrackListState: StateFlow<List<PlayerTrack>> = _playerTrackListState
+
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
 
@@ -30,7 +34,16 @@ class VMLikes @Inject constructor(
     fun getLikes(userId: String) {
         viewModelScope.launch {
             try {
-                _likeListState.value = likeRepository.getLikes(userId).sortedByDescending { it.likeId }
+                _playerTrackListState.value = likeRepository.getLikes(userId)
+                    .sortedByDescending { it.likeId }
+                    .map {PlayerTrack(
+                        it.trackId,
+                        it.trackTitle,
+                        it.trackPreview,
+                        it.trackImage,
+                        it.trackArtistName
+                    )
+                }
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {
@@ -39,10 +52,10 @@ class VMLikes @Inject constructor(
         }
     }
 
-    fun deleteLike(like: Like) {
+    fun deleteLikeByTrackId(userId: String, trackId: String) {
         viewModelScope.launch {
-            likeRepository.deleteLike(like)
-            getLikes(like.userId)
+            likeRepository.deleteLikeByTrackId(userId, trackId)
+            getLikes(userId)
         }
     }
 }

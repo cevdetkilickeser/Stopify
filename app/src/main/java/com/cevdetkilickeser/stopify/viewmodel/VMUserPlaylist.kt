@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.repo.UserPlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,8 +19,8 @@ class VMUserPlaylist @Inject constructor(
     private val userPlaylistRepository: UserPlaylistRepository
 ): AndroidViewModel(application) {
 
-    private val _userPlaylistState = MutableStateFlow<List<UserPlaylistTrack>>(emptyList())
-    val userPlaylistState: StateFlow<List<UserPlaylistTrack>> = _userPlaylistState
+    private val _playerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val playerTrackListState: StateFlow<List<PlayerTrack>> = _playerTrackListState
 
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
@@ -31,7 +32,19 @@ class VMUserPlaylist @Inject constructor(
         viewModelScope.launch {
             try {
                 _loadingState.value = true
-                _userPlaylistState.value = userPlaylistRepository.getUserPlaylist(userId, userPlaylistId)
+                _playerTrackListState.value = userPlaylistRepository.getUserPlaylist(userId, userPlaylistId)
+                    .sortedByDescending { it.id }
+                    .map {
+                        PlayerTrack(
+                            it.trackId,
+                            it.trackTitle,
+                            it.trackPreview,
+                            it.trackImage,
+                            it.trackArtistName,
+                            userPlaylistTableId = it.id,
+                            userPlaylistId = it.userPlaylistId
+                        )
+                }
                 _loadingState.value = false
             } catch (e:Exception) {
                 _errorState.value = getApplication<Application>().getString(R.string.error)

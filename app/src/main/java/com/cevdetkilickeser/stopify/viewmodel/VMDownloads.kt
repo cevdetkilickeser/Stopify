@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.entity.Like
+import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.repo.DownloadRepository
 import com.cevdetkilickeser.stopify.repo.LikeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,8 +27,8 @@ class VMDownloads @Inject constructor(
     private val downloadManager =
         application.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
-    private val _downloadListState = MutableStateFlow<List<Download>>(emptyList())
-    val downloadListState: StateFlow<List<Download>> = _downloadListState
+    private val _playerTrackListState = MutableStateFlow<List<PlayerTrack>>(emptyList())
+    val playerTrackListState: StateFlow<List<PlayerTrack>> = _playerTrackListState
 
     private val _likeListState = MutableStateFlow<List<Like>>(emptyList())
     val likeListState: StateFlow<List<Like>> = _likeListState
@@ -41,7 +42,18 @@ class VMDownloads @Inject constructor(
     fun getDownloads(userId: String) {
         viewModelScope.launch {
             try {
-                _downloadListState.value = downloadRepository.getDownloads(userId).sortedByDescending { it.downloadId }
+                _playerTrackListState.value = downloadRepository.getDownloads(userId).sortedByDescending { it.downloadId }
+                    .map {
+                        PlayerTrack(
+                            it.trackId,
+                            it.trackTitle,
+                            it.trackPreview,
+                            it.trackImage,
+                            it.trackArtistName,
+                            it.downloadId,
+                            it.fileUri
+                        )
+                }
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {
@@ -54,7 +66,7 @@ class VMDownloads @Inject constructor(
         viewModelScope.launch {
             downloadRepository.deleteDownloadFromLocaleStorage(downloadId, fileUri, context, downloadManager)
             downloadRepository.deleteDownload(Download(downloadId,"","","","","","",""))
-            _downloadListState.value = downloadRepository.getDownloads(userId)
+            getDownloads(userId)
         }
     }
 
