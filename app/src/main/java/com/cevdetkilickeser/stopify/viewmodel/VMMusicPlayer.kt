@@ -143,11 +143,11 @@ class VMMusicPlayer @Inject constructor(
     }
 
     fun previousSong() {
+        val currentIndex = _player.currentMediaItemIndex
         if (_currentPosition.value > 1000L) {
-            _player.seekBack()
+            _player.seekTo(currentIndex, 0L)
             _currentPosition.value = 0L
         } else {
-            val currentIndex = _player.currentMediaItemIndex
             if (currentIndex > 0) {
                 _player.seekTo(currentIndex - 1, 0L)
                 _player.play()
