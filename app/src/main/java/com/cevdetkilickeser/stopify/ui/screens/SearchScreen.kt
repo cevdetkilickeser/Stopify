@@ -40,8 +40,8 @@ import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.ui.component.TrackList
-import com.cevdetkilickeser.stopify.ui.component.search_screen.AlbumList
-import com.cevdetkilickeser.stopify.ui.component.search_screen.ArtistList
+import com.cevdetkilickeser.stopify.ui.component.AlbumList
+import com.cevdetkilickeser.stopify.ui.component.ArtistList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
 import kotlinx.serialization.builtins.ListSerializer
 
