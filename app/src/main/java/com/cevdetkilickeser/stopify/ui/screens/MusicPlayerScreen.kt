@@ -65,6 +65,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.data.model.playlist.UserPlaylistResponse
 import com.cevdetkilickeser.stopify.viewmodel.VMMusicPlayer
 
 
@@ -115,332 +116,133 @@ fun MusicPlayerScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = currentTrack!!.trackImage,
-                        error = painterResource(id = R.drawable.ic_play),
-                        fallback = painterResource(id = R.drawable.ic_play)
-                    ),
-                    contentDescription = "Track Image",
-                    modifier = Modifier.size(300.dp)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = currentTrack!!.trackTitle,
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = currentTrack!!.trackArtistName,
-                    style = MaterialTheme.typography.labelLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                )
-            }
+            PlayerImage(it)
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(horizontal = 16.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(
-                            onClick = {
-                                if (!isDownload) {
-                                    viewModel.downloadSong(it, userId)
-                                } else {
-                                    val download = viewModel.getSingleDownload(userId, it.trackId)
-                                    viewModel.deleteDownload(userId, it.trackId, download.downloadId, download.fileUri, context)
-                                }
-                            },
-                            enabled = if (!isDownload) isConnected else true
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_download),
-                                contentDescription = "Download",
-                                tint = if (isDownload) {
-                                    Color.Green
-                                } else {
-                                    if (isConnected){
-                                        Color.Black
-                                    } else {
-                                        Color.Gray
-                                    }
-                                },
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                        if (downloadInfo.isNotEmpty()){
-                            Text(text = downloadInfo)
-                        }
-                    }
-
-                    Box {
-                        IconButton(
-                            onClick = {
-                                expanded = true
-                                addedTrack = currentTrack
-                            }
-                        ) {
-                            Icon(
-                                Icons.Default.AddCircle,
-                                contentDescription = "Add",
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = if (userPlaylistResponses.size < 10) {
-                                Modifier
-                                    .background(color = Color.LightGray)
+                    DownloadButton(
+                        onDownloadClick = {
+                            if (!isDownload) {
+                                viewModel.downloadSong(it, userId)
                             } else {
-                                Modifier
-                                    .background(color = Color.LightGray)
-                                    .fillMaxHeight(0.5f)
-                            }
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "Add New",
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(horizontal = 4.dp)
-                                        )
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = null
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    showDialog = true
-                                    expanded = false
-                                }
-                            )
-                            userPlaylistResponses.forEach { userPlaylistResponse ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(text = userPlaylistResponse.userPlaylistName)
-                                    },
-                                    onClick = {
-                                        val userPlaylistTrack = UserPlaylistTrack(
-                                            0,
-                                            userId,
-                                            userPlaylistResponse.userPlaylistId,
-                                            userPlaylistResponse.userPlaylistName,
-                                            addedTrack!!.trackId,
-                                            addedTrack!!.trackPreview,
-                                            addedTrack!!.trackTitle,
-                                            addedTrack!!.trackImage,
-                                            addedTrack!!.trackArtistName
-                                        )
-                                        viewModel.insertTrackToUserPlaylist(userPlaylistTrack)
-                                        expanded = false
-                                    }
+                                val download = viewModel.getSingleDownload(userId, it.trackId)
+                                viewModel.deleteDownload(
+                                    userId,
+                                    it.trackId,
+                                    download.downloadId,
+                                    download.fileUri,
+                                    context
                                 )
                             }
-                        }
-                        if (showDialog) {
-                            AlertDialog(
-                                containerColor = Color.White,
-                                onDismissRequest = {
-                                    showDialog = false
-                                    expanded = true
-                                },
-                                title = { Text(text = "Add New Playlist") },
-                                text = {
-                                    Column {
-                                        TextField(
-                                            value = newPlaylistName,
-                                            onValueChange = { newPlaylistName = it },
-                                            label = { Text("Playlist Name") },
-                                            colors = TextFieldDefaults.colors(
-                                                cursorColor = Color.Black,
-                                                focusedLabelColor = Color.Gray,
-                                                unfocusedLabelColor = Color.Gray,
-                                                focusedContainerColor = Color.White,
-                                                unfocusedContainerColor = Color.White,
-                                                focusedSuffixColor = Color.Black,
-                                                selectionColors = TextSelectionColors(
-                                                    Color.Black,
-                                                    Color.Gray
-                                                ),
-                                                focusedIndicatorColor = Color.Black
-                                            )
-                                        )
-                                    }
-                                },
-                                confirmButton = {
-                                    Button(
-                                        onClick = {
-                                            val userPlaylistTrack = UserPlaylistTrack(
-                                                0,
-                                                userId,
-                                                nextUserPlaylistId,
-                                                newPlaylistName,
-                                                addedTrack!!.trackId,
-                                                addedTrack!!.trackPreview,
-                                                addedTrack!!.trackTitle,
-                                                addedTrack!!.trackImage,
-                                                addedTrack!!.trackArtistName
-                                            )
-                                            viewModel.insertTrackToNewUserPlaylist(userPlaylistTrack)
-                                            showDialog = false
-                                            newPlaylistName = ""
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.Black
-                                        )
-                                    ) {
-                                        Text("OK")
-                                    }
-                                },
-                                dismissButton = {
-                                    Button(
-                                        onClick = {
-                                            showDialog = false
-                                            expanded = true
-                                            newPlaylistName = ""
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.Black
-                                        )
-                                    ) {
-                                        Text("Cancel")
-                                    }
-                                }
+                        },
+                        isDownload = isDownload,
+                        isConnected = isConnected,
+                        downloadInfo = downloadInfo
+                    )
+                    AddButton(
+                        onAddClick = {
+                            expanded = true
+                            addedTrack = currentTrack
+                        },
+                        expanded = expanded,
+                        onDropDownMenuDismissRequestClick = { expanded = false },
+                        userPlaylistResponses = userPlaylistResponses,
+                        onAddNewClick = {
+                            showDialog = true
+                            expanded = false
+                        },
+                        onMenuItemClick = { userPlaylistResponse ->
+                            val userPlaylistTrack = UserPlaylistTrack(
+                                0,
+                                userId,
+                                userPlaylistResponse.userPlaylistId,
+                                userPlaylistResponse.userPlaylistName,
+                                addedTrack!!.trackId,
+                                addedTrack!!.trackPreview,
+                                addedTrack!!.trackTitle,
+                                addedTrack!!.trackImage,
+                                addedTrack!!.trackArtistName
                             )
+                            viewModel.insertTrackToUserPlaylist(userPlaylistTrack)
+                            expanded = false
+                        },
+                        showDialog = showDialog,
+                        newPlaylistName = newPlaylistName,
+                        onAlertDialogDismissRequest = {
+                            showDialog = false
+                            expanded = true
+                        },
+                        onConfirmClick = {
+                            val userPlaylistTrack = UserPlaylistTrack(
+                                0,
+                                userId,
+                                nextUserPlaylistId,
+                                newPlaylistName,
+                                addedTrack!!.trackId,
+                                addedTrack!!.trackPreview,
+                                addedTrack!!.trackTitle,
+                                addedTrack!!.trackImage,
+                                addedTrack!!.trackArtistName
+                            )
+                            viewModel.insertTrackToNewUserPlaylist(userPlaylistTrack)
+                            showDialog = false
+                            newPlaylistName = ""
+                        },
+                        onDismissClick = {
+                            showDialog = false
+                            expanded = true
+                            newPlaylistName = ""
+                        },
+                        onValueChange = {
+                            newPlaylistName = it
                         }
-                    }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Slider(
-                    value = sliderPosition,
+                PlayerSlider(
+                    sliderPosition = sliderPosition,
+                    sliderDuration = sliderDuration,
                     onValueChange = { newValue ->
                         viewModel.seekTo(newValue.toLong() * 1000)
                     },
-                    valueRange = 0f..sliderDuration,
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.Black,
-                        inactiveTrackColor = Color.Gray,
-                        activeTrackColor = Color.Black
-                    ),
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    currentPosition = currentPosition,
+                    duration = duration
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = formatTime(currentPosition))
-                    Text(text = formatTime(duration))
-                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    IconButton(onClick = { viewModel.previousSong() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_skip_previous),
-                            contentDescription = "Previous",
-                            modifier = Modifier.size(200.dp)
-                        )
-                    }
-                    IconButton(onClick = { viewModel.rewind() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_backward_10),
-                            contentDescription = "Rewind 10s",
-                            modifier = Modifier.size(200.dp)
-                        )
-                    }
-                    IconButton(onClick = { if (isPlaying) viewModel.pause() else viewModel.play() }) {
-                        Icon(
-                            painter = if (isPlaying) painterResource(id = R.drawable.ic_pause) else painterResource(
-                                id = R.drawable.ic_play
-                            ),
-                            contentDescription = "Play/Pause",
-                            modifier = Modifier.size(200.dp)
-                        )
-                    }
-                    IconButton(onClick = { viewModel.fastForward() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_forward_10),
-                            contentDescription = "Forward 10s",
-                            modifier = Modifier.size(200.dp)
-                        )
-                    }
-                    IconButton(onClick = { viewModel.nextSong() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_skip_next),
-                            contentDescription = "Next",
-                            modifier = Modifier.size(200.dp)
-                        )
-                    }
-                }
+                PlayerControlButtons(
+                    isPlaying = isPlaying,
+                    onPreviousClick = { viewModel.previousSong() },
+                    onRewindClick = { viewModel.rewind() },
+                    onPlayPauseClick = { if (isPlaying) viewModel.pause() else viewModel.play() },
+                    onFastForwardClick = { viewModel.fastForward() },
+                    onNextClick = { viewModel.nextSong() }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(onClick = {
-                        val shareLink = currentTrack!!.trackPreview
-                        viewModel.share(shareLink, context)
-                    }) {
-                        Icon(
-                            Icons.Default.Share,
-                            contentDescription = "Share",
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                ShareAndPlaylistButtons(onShareClick = {
+                    val shareLink = currentTrack!!.trackPreview
+                    viewModel.share(shareLink, context)
+                }, onPlaylistClick = {
+                    showBottomSheet = true
+                })
 
-                    IconButton(onClick = { showBottomSheet = true }) {
-                        Icon(
-                            Icons.Default.Menu,
-                            contentDescription = "Playlist",
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
             }
         }
+
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
@@ -452,8 +254,7 @@ fun MusicPlayerScreen(
                     mutableStateOf(currentTrack!!.trackId)
                 }
                 PlayerTrackList(
-                    playerList = playerTrackList,
-                    onClick = { playerTrack ->
+                    playerList = playerTrackList, onClick = { playerTrack ->
                         if (playerTrack.trackId == currentTrack!!.trackId) {
                             if (isPlaying) {
                                 viewModel.pause()
@@ -464,8 +265,7 @@ fun MusicPlayerScreen(
                             viewModel.seekTo(playerTrackList.indexOf(playerTrack), 0L)
                         }
                         currentTrackId = playerTrack.trackId
-                    },
-                    currentTrackId = currentTrackId
+                    }, currentTrackId = currentTrackId
                 )
             }
         }
@@ -473,14 +273,337 @@ fun MusicPlayerScreen(
 }
 
 @Composable
+fun DownloadButton(
+    onDownloadClick: () -> Unit,
+    isDownload: Boolean,
+    isConnected: Boolean,
+    downloadInfo: String
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(
+            onClick = {
+                onDownloadClick()
+//                        if (!isDownload) {
+//                            viewModel.downloadSong(it, userId)
+//                        } else {
+//                            val download = viewModel.getSingleDownload(userId, it.trackId)
+//                            viewModel.deleteDownload(userId, it.trackId, download.downloadId, download.fileUri, context)
+//                        }
+            }, enabled = if (!isDownload) isConnected else true
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_download),
+                contentDescription = "Download",
+                tint = if (isDownload) {
+                    Color.Green
+                } else {
+                    if (isConnected) {
+                        Color.Black
+                    } else {
+                        Color.Gray
+                    }
+                },
+                modifier = Modifier.size(32.dp)
+            )
+        }
+        if (downloadInfo.isNotEmpty()) {
+            Text(text = downloadInfo)
+        }
+    }
+}
+
+@Composable
+fun AddButton(
+    onAddClick: () -> Unit,
+    expanded:Boolean,
+    onDropDownMenuDismissRequestClick: () -> Unit,
+    userPlaylistResponses: List<UserPlaylistResponse>,
+    onAddNewClick: () -> Unit,
+    onMenuItemClick: (UserPlaylistResponse) -> Unit,
+    showDialog: Boolean,
+    newPlaylistName: String,
+    onAlertDialogDismissRequest: () -> Unit,
+    onConfirmClick: () -> Unit,
+    onDismissClick: () -> Unit,
+    onValueChange: (String) -> Unit
+) {
+    Box {
+        IconButton(onClick = {
+            onAddClick()
+//                        expanded = true
+//                        addedTrack = currentTrack
+        }) {
+            Icon(
+                Icons.Default.AddCircle, contentDescription = "Add", modifier = Modifier.size(32.dp)
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onDropDownMenuDismissRequestClick() }, //expanded = false
+            modifier = if (userPlaylistResponses.size < 10) {
+                Modifier.background(color = Color.LightGray)
+            } else {
+                Modifier
+                    .background(color = Color.LightGray)
+                    .fillMaxHeight(0.5f)
+            }
+        ) {
+            DropdownMenuItem(text = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Add New",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Add, contentDescription = null
+                    )
+                }
+            }, onClick = {
+                onAddNewClick()
+//                            showDialog = true
+//                            expanded = false
+            })
+            userPlaylistResponses.forEach { userPlaylistResponse ->
+                DropdownMenuItem(text = {
+                    Text(text = userPlaylistResponse.userPlaylistName)
+                }, onClick = {
+                    onMenuItemClick(userPlaylistResponse)
+//                                val userPlaylistTrack = UserPlaylistTrack(
+//                                    0,
+//                                    userId,
+//                                    userPlaylistResponse.userPlaylistId,
+//                                    userPlaylistResponse.userPlaylistName,
+//                                    addedTrack!!.trackId,
+//                                    addedTrack!!.trackPreview,
+//                                    addedTrack!!.trackTitle,
+//                                    addedTrack!!.trackImage,
+//                                    addedTrack!!.trackArtistName
+//                                )
+//                                viewModel.insertTrackToUserPlaylist(userPlaylistTrack)
+//                                expanded = false
+                })
+            }
+        }
+        if (showDialog) {
+            AlertDialog(containerColor = Color.White, onDismissRequest = {
+                onAlertDialogDismissRequest()
+//                            showDialog = false
+//                            expanded = true
+            }, title = { Text(text = "Add New Playlist") }, text = {
+                Column {
+                    TextField(value = newPlaylistName,
+                        onValueChange = { onValueChange(it) }, //newPlaylistName = it
+                        label = { Text("Playlist Name") },
+                        colors = TextFieldDefaults.colors(
+                            cursorColor = Color.Black,
+                            focusedLabelColor = Color.Gray,
+                            unfocusedLabelColor = Color.Gray,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedSuffixColor = Color.Black,
+                            selectionColors = TextSelectionColors(
+                                Color.Black, Color.Gray
+                            ),
+                            focusedIndicatorColor = Color.Black
+                        )
+                    )
+                }
+            }, confirmButton = {
+                Button(
+                    onClick = {
+                        onConfirmClick()
+//                                    val userPlaylistTrack = UserPlaylistTrack(
+//                                        0,
+//                                        userId,
+//                                        nextUserPlaylistId,
+//                                        newPlaylistName,
+//                                        addedTrack!!.trackId,
+//                                        addedTrack!!.trackPreview,
+//                                        addedTrack!!.trackTitle,
+//                                        addedTrack!!.trackImage,
+//                                        addedTrack!!.trackArtistName
+//                                    )
+//                                    viewModel.insertTrackToNewUserPlaylist(userPlaylistTrack)
+//                                    showDialog = false
+//                                    newPlaylistName = ""
+                    }, colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black
+                    )
+                ) {
+                    Text("OK")
+                }
+            }, dismissButton = {
+                Button(
+                    onClick = {
+                        onDismissClick()
+//                                    showDialog = false
+//                                    expanded = true
+//                                    newPlaylistName = ""
+                    }, colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black
+                    )
+                ) {
+                    Text("Cancel")
+                }
+            })
+        }
+    }
+}
+
+@Composable
+fun PlayerSlider(
+    sliderPosition: Float,
+    sliderDuration: Float,
+    onValueChange: (Float) -> Unit,
+    currentPosition: Long,
+    duration: Long
+) {
+    Slider(
+        value = sliderPosition, onValueChange = { newValue ->
+            onValueChange(newValue)
+            //viewModel.seekTo(newValue.toLong() * 1000)
+        }, valueRange = 0f..sliderDuration, colors = SliderDefaults.colors(
+            thumbColor = Color.Black,
+            inactiveTrackColor = Color.Gray,
+            activeTrackColor = Color.Black
+        ), modifier = Modifier.padding(horizontal = 16.dp)
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = formatTime(currentPosition))
+        Text(text = formatTime(duration))
+    }
+}
+
+@Composable
+fun PlayerControlButtons(
+    isPlaying: Boolean,
+    onPreviousClick: () -> Unit,
+    onRewindClick: () -> Unit,
+    onPlayPauseClick: () -> Unit,
+    onFastForwardClick: () -> Unit,
+    onNextClick: () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()
+    ) {
+        IconButton(onClick = { onPreviousClick() }) { //viewModel.previousSong()    //viewModel.rewind()    //if (isPlaying) viewModel.pause() else viewModel.play()    //viewModel.fastForward()  //viewModel.nextSong()
+            Icon(
+                painter = painterResource(id = R.drawable.ic_skip_previous),
+                contentDescription = "Previous",
+                modifier = Modifier.size(200.dp)
+            )
+        }
+        IconButton(onClick = { onRewindClick() }) { //viewModel.rewind()
+            Icon(
+                painter = painterResource(id = R.drawable.ic_backward_10),
+                contentDescription = "Rewind 10s",
+                modifier = Modifier.size(200.dp)
+            )
+        }
+        IconButton(onClick = { onPlayPauseClick() }) {
+            Icon(
+                painter = if (isPlaying) painterResource(id = R.drawable.ic_pause) else painterResource(
+                    id = R.drawable.ic_play
+                ), contentDescription = "Play/Pause", modifier = Modifier.size(200.dp)
+            )
+        }
+        IconButton(onClick = { onFastForwardClick() }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_forward_10),
+                contentDescription = "Forward 10s",
+                modifier = Modifier.size(200.dp)
+            )
+        }
+        IconButton(onClick = { onNextClick() }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_skip_next),
+                contentDescription = "Next",
+                modifier = Modifier.size(200.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ShareAndPlaylistButtons(
+    onShareClick: () -> Unit, onPlaylistClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        IconButton(onClick = {
+            onShareClick()
+
+        }) {
+            Icon(
+                Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(32.dp)
+            )
+        }
+
+        IconButton(onClick = { onPlaylistClick() }) {
+            Icon(
+                Icons.Default.Menu, contentDescription = "Playlist", modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerImage(currentTrack: PlayerTrack) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Top
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(
+                model = currentTrack.trackImage,
+                error = painterResource(id = R.drawable.ic_play),
+                fallback = painterResource(id = R.drawable.ic_play)
+            ), contentDescription = "Track Image", modifier = Modifier.size(300.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = currentTrack.trackTitle,
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = currentTrack.trackArtistName,
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+        )
+    }
+}
+
+@Composable
 fun PlayerTrackList(
-    playerList: List<PlayerTrack>,
-    onClick: (PlayerTrack) -> Unit,
-    currentTrackId: String
+    playerList: List<PlayerTrack>, onClick: (PlayerTrack) -> Unit, currentTrackId: String
 ) {
     Column(
-        modifier = Modifier
-            .background(color = Color.White)
+        modifier = Modifier.background(color = Color.White)
     ) {
         Text(
             text = "Current Playlist",
@@ -510,9 +633,7 @@ fun PlayerTrackList(
 
 @Composable
 fun PlayerTrackItem(
-    playerTrack: PlayerTrack,
-    onClick: (PlayerTrack) -> Unit,
-    isCurrentTrack: Boolean
+    playerTrack: PlayerTrack, onClick: (PlayerTrack) -> Unit, isCurrentTrack: Boolean
 ) {
     Row(
         modifier = Modifier
