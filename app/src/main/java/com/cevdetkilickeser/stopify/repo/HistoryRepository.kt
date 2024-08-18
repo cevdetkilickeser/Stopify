@@ -7,11 +7,11 @@ class HistoryRepository(private val historyDao: HistoryDao) {
 
     suspend fun insertHistory(history: History) = historyDao.insertHistory(history)
 
-    suspend fun getTrackHistory(): List<History> = historyDao.getTrackHistory()
+    suspend fun getTrackHistory(userId: String): List<History> = historyDao.getTrackHistory(userId)
 
-    suspend fun getArtistHistory(): List<History> = historyDao.getArtistHistory()
+    suspend fun getArtistHistory(userId: String): List<History> = historyDao.getArtistHistory(userId)
 
-    suspend fun getAlbumHistory(): List<History> = historyDao.getAlbumHistory()
+    suspend fun getAlbumHistory(userId: String): List<History> = historyDao.getAlbumHistory(userId)
 
     suspend fun deleteHistory(history: History) = historyDao.deleteHistory(history)
 

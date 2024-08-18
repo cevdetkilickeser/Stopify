@@ -142,12 +142,12 @@ class VMSearch @Inject constructor(
         }
     }
 
-    fun getHistory(selectedFilter: String) {
+    fun getHistory(userId: String, selectedFilter: String) {
         viewModelScope.launch {
             try {
                 when (selectedFilter) {
                     "Track" -> _historyPlayerTrackListState.value =
-                        historyRepository.getTrackHistory()
+                        historyRepository.getTrackHistory(userId)
                             .sortedByDescending { it.historyId }
                             .map {
                                 PlayerTrack(
@@ -160,7 +160,7 @@ class VMSearch @Inject constructor(
                                 )
                             }
 
-                    "Artist" -> _historyArtistListState.value = historyRepository.getArtistHistory()
+                    "Artist" -> _historyArtistListState.value = historyRepository.getArtistHistory(userId)
                         .sortedByDescending { it.historyId }
                         .map {
                             Artist(
@@ -171,7 +171,7 @@ class VMSearch @Inject constructor(
                             )
                         }
 
-                    "Album" -> _historyAlbumListState.value = historyRepository.getAlbumHistory()
+                    "Album" -> _historyAlbumListState.value = historyRepository.getAlbumHistory(userId)
                         .sortedByDescending { it.historyId }
                         .map {
                             Album(
@@ -198,7 +198,7 @@ class VMSearch @Inject constructor(
     fun deleteHistory(history: History, selectedFilter: String) {
         viewModelScope.launch {
             historyRepository.deleteHistory(history)
-            getHistory(selectedFilter)
+            getHistory(history.userId, selectedFilter)
         }
     }
 

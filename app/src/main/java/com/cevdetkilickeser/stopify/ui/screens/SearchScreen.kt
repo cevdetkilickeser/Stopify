@@ -67,7 +67,7 @@ fun SearchScreen(
 
     LaunchedEffect(isConnected, searchQuery, selectedFilter) {
         viewModel.search(searchQuery, selectedFilter)
-        viewModel.getHistory(selectedFilter)
+        viewModel.getHistory(userId, selectedFilter)
     }
 
     Column(
@@ -105,7 +105,7 @@ fun SearchScreen(
                 selectedFilter = selectedFilter,
                 onFilterSelected = { option ->
                     selectedFilter = option
-                    viewModel.getHistory(selectedFilter)
+                    viewModel.getHistory(userId, selectedFilter)
                     viewModel.search(searchQuery, selectedFilter)
                 },
                 filterOptions = filterOptions
