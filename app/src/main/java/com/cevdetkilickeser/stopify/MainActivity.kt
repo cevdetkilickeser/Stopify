@@ -7,7 +7,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.navigation.compose.rememberNavController
 import com.cevdetkilickeser.stopify.ui.MainScreen
 import com.cevdetkilickeser.stopify.ui.theme.StopifyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,8 +23,7 @@ class MainActivity : ComponentActivity() {
                 SideEffect {
                     window.statusBarColor = statusBarColor.toArgb()
                 }
-                val navController = rememberNavController()
-                MainScreen(navController)
+                MainScreen()
             }
         }
     }
