@@ -19,10 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,6 +36,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.model.artist.ArtistAlbumData
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
@@ -43,14 +48,19 @@ fun ArtistScreen(
     viewModel: VMArtist = hiltViewModel(),
     artistId: String
 ) {
+    val context = LocalContext.current
     val artist by viewModel.artistState.collectAsState()
     val artistAlbums by viewModel.artistAlbumState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
     val isConnected by viewModel.isConnected.collectAsState()
+    var launchEffectInitializer by rememberSaveable { mutableStateOf(!isInternetAvailable(context))}
 
-    LaunchedEffect(isConnected, artistId) {
-        viewModel.getArtist(artistId)
+    LaunchedEffect(isConnected) {
+        if (launchEffectInitializer != isConnected) {
+            viewModel.getArtist(artistId)
+            launchEffectInitializer  = isConnected
+        }
     }
 
     if (!isConnected) {

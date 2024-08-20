@@ -37,7 +37,7 @@ fun UserPlayListScreen(
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
 
-    LaunchedEffect(userId, userPlaylistId) {
+    LaunchedEffect(Unit) {
         viewModel.getUserPlaylist(userId, userPlaylistId)
     }
 

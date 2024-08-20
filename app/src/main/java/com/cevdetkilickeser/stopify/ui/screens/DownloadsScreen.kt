@@ -38,7 +38,7 @@ fun DownloadsScreen(
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
 
-    LaunchedEffect(userId) {
+    LaunchedEffect(Unit) {
         viewModel.getDownloads(userId)
         viewModel.getLikes(userId)
     }

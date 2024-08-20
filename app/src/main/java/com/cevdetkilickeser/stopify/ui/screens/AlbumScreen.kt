@@ -12,9 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,6 +29,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.cevdetkilickeser.stopify.R
 import com.cevdetkilickeser.stopify.data.entity.Like
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
+import com.cevdetkilickeser.stopify.isInternetAvailable
 import com.cevdetkilickeser.stopify.json
 import com.cevdetkilickeser.stopify.preparePlayerTrackListForRoute
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
@@ -41,17 +46,21 @@ fun AlbumScreen(
     albumId: String,
     userId: String
 ) {
-
+    val context = LocalContext.current
     val album by viewModel.albumState.collectAsState()
     val playerTrackList by viewModel.playerTrackListState.collectAsState()
     val likeList by viewModel.likeListState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
     val isConnected by viewModel.isConnected.collectAsState()
+    var launchEffectInitializer by rememberSaveable { mutableStateOf(!isInternetAvailable(context))}
 
-    LaunchedEffect(isConnected, albumId) {
-        viewModel.getAlbum(albumId)
-        viewModel.getLikes(userId)
+    LaunchedEffect(isConnected) {
+        if (launchEffectInitializer != isConnected) {
+            viewModel.getAlbum(albumId)
+            viewModel.getLikes(userId)
+            launchEffectInitializer  = isConnected
+        }
     }
 
     if (!isConnected) {

@@ -35,7 +35,7 @@ fun LikesScreen(
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
 
-    LaunchedEffect(userId) {
+    LaunchedEffect(Unit) {
         viewModel.getLikes(userId)
     }
 

@@ -54,8 +54,8 @@ fun SingleGenreScreen(
     val singleGenreDataList by viewModel.state.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
     val errorState by viewModel.errorState.collectAsState()
-    val isConnected by viewModel.isConnected.collectAsState(isInternetAvailable(context))
-    var launchEffectInitializer by rememberSaveable { mutableStateOf(!isConnected) }
+    val isConnected by viewModel.isConnected.collectAsState()
+    var launchEffectInitializer by rememberSaveable { mutableStateOf(!isInternetAvailable(context))}
 
     LaunchedEffect(isConnected) {
         if (launchEffectInitializer != isConnected) {
