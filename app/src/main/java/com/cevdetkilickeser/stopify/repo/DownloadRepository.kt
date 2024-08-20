@@ -8,8 +8,11 @@ import android.net.Uri
 import com.cevdetkilickeser.stopify.data.entity.Download
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.room.DownloadDao
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class DownloadRepository(private val downloadDao: DownloadDao) {
+class DownloadRepository@Inject constructor(
+    @ApplicationContext private val context: Context, private val downloadDao: DownloadDao) {
 
     suspend fun insertDownload(download: Download) = downloadDao.insertDownload(download)
 
@@ -17,7 +20,7 @@ class DownloadRepository(private val downloadDao: DownloadDao) {
 
     suspend fun getDownloads(userId: String): List<Download> = downloadDao.getDownloads(userId)
 
-    fun deleteDownloadFromLocaleStorage(downloadId: Long, fileUri: String, context: Context, downloadManager: DownloadManager){
+    fun deleteDownloadFromLocaleStorage(downloadId: Long, fileUri: String, downloadManager: DownloadManager){
         val uri = Uri.parse(fileUri)
         val resolver = context.contentResolver
         resolver.delete(uri, null, null)

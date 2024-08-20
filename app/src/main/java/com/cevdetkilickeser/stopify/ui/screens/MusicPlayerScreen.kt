@@ -130,8 +130,7 @@ fun MusicPlayerScreen(
                             userId,
                             it.trackId,
                             download.downloadId,
-                            download.fileUri,
-                            context
+                            download.fileUri
                         )
                     }
                 },

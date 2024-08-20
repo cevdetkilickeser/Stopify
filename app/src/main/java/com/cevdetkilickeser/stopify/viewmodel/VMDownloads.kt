@@ -62,9 +62,9 @@ class VMDownloads @Inject constructor(
         }
     }
 
-    fun deleteDownload(downloadId: Long, fileUri: String, userId: String, context: Context) {
+    fun deleteDownload(downloadId: Long, fileUri: String, userId: String) {
         viewModelScope.launch {
-            downloadRepository.deleteDownloadFromLocaleStorage(downloadId, fileUri, context, downloadManager)
+            downloadRepository.deleteDownloadFromLocaleStorage(downloadId, fileUri, downloadManager)
             downloadRepository.deleteDownload(Download(downloadId,"","","","","","",""))
             getDownloads(userId)
         }

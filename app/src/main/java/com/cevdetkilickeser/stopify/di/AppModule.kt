@@ -45,8 +45,8 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideDownloadRepository(downloadDao: DownloadDao): DownloadRepository {
-        return DownloadRepository(downloadDao)
+    fun provideDownloadRepository(@ApplicationContext context: Context, downloadDao: DownloadDao): DownloadRepository {
+        return DownloadRepository(context, downloadDao)
     }
 
     @Provides

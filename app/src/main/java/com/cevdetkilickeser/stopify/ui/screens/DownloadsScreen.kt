@@ -10,7 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,7 +31,6 @@ fun DownloadsScreen(
     userId: String,
     viewModel: VMDownloads = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val playerTrackList by viewModel.playerTrackListState.collectAsState()
     val likeList by viewModel.likeListState.collectAsState()
     val loadingState by viewModel.loadingState.collectAsState()
@@ -87,7 +85,7 @@ fun DownloadsScreen(
                         }
                     },
                     onDeleteClick = { track ->
-                        viewModel.deleteDownload(track.downloadId!!, track.fileUri!!, userId, context)
+                        viewModel.deleteDownload(track.downloadId!!, track.fileUri!!, userId)
                     }
                 )
 

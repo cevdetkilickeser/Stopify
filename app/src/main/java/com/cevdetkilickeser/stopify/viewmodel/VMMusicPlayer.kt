@@ -253,9 +253,9 @@ class VMMusicPlayer @Inject constructor(
         }
     }
 
-    fun deleteDownload(userId: String, trackId: String, downloadId: Long, fileUri: String, context: Context) {
+    fun deleteDownload(userId: String, trackId: String, downloadId: Long, fileUri: String) {
         viewModelScope.launch {
-            downloadRepository.deleteDownloadFromLocaleStorage(downloadId, fileUri, context, downloadManager)
+            downloadRepository.deleteDownloadFromLocaleStorage(downloadId, fileUri, downloadManager)
             downloadRepository.deleteDownload(Download(downloadId,"","","","","","",""))
             getDownloadList(userId, trackId)
             _isDownloadInfoState.value = "Deleted"
