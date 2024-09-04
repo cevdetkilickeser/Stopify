@@ -1,6 +1,7 @@
 package com.cevdetkilickeser.stopify.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,10 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -36,12 +41,12 @@ import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.data.model.player.PlayerTrack
 import com.cevdetkilickeser.stopify.json
 import com.cevdetkilickeser.stopify.preparePlayerTrackListForRoute
+import com.cevdetkilickeser.stopify.ui.component.AlbumList
+import com.cevdetkilickeser.stopify.ui.component.ArtistList
 import com.cevdetkilickeser.stopify.ui.component.ErrorScreen
 import com.cevdetkilickeser.stopify.ui.component.LoadingComponent
 import com.cevdetkilickeser.stopify.ui.component.OfflineInfo
 import com.cevdetkilickeser.stopify.ui.component.TrackList
-import com.cevdetkilickeser.stopify.ui.component.AlbumList
-import com.cevdetkilickeser.stopify.ui.component.ArtistList
 import com.cevdetkilickeser.stopify.viewmodel.VMSearch
 import kotlinx.serialization.builtins.ListSerializer
 
@@ -275,10 +280,19 @@ fun QueryFilter(
     Box {
         Button(
             onClick = { expanded = true },
-            modifier = Modifier.width(90.dp),
+            modifier = Modifier.width(110.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
         ) {
-            Text(selectedFilter)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(selectedFilter, Modifier.width(48.dp))
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null
+                )
+            }
         }
         DropdownMenu(
             expanded = expanded,

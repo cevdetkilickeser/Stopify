@@ -63,7 +63,6 @@ fun MainScreen () {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStackEntry?.destination?.route
     val userId: String? = FirebaseAuth.getInstance().currentUser?.email
-    println(userId)
 
     Scaffold(
         containerColor = Color.White,
