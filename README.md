@@ -5,6 +5,20 @@ is named "Stopify," though it :) offers the ability to listen to 30-second previ
 users can perform desired searches using song, artist, and album search filters. The app also allows users to add tracks to favorites, 
 create personalized playlists, and download songs for offline listening.
 
+## 👇 Structures
+
+- MVVM
+- Jetpack Compose
+- Media3 - Exo Player
+- Retrofit
+- Room
+- Coroutines
+- Hilt
+- Connectivity Manager
+- Download Manager
+- Firebase Auth
+- Coil
+
 
 ## 📸 Screenshots
 ![SS1](https://github.com/cevdetkilickeser/Stopify/blob/master/screenshots/1.png)
@@ -23,18 +37,3 @@ create personalized playlists, and download songs for offline listening.
 ![SS15](https://github.com/cevdetkilickeser/Stopify/blob/master/screenshots/15.png)
 ![SS16](https://github.com/cevdetkilickeser/Stopify/blob/master/screenshots/16.png)
 ![SS17](https://github.com/cevdetkilickeser/Stopify/blob/master/screenshots/17.png)
-
-
-## 👇 Structures
-
-- MVVM
-- Jetpack Compose
-- Media3 - Exo Player
-- Retrofit
-- Room
-- Coroutines
-- Hilt
-- Connectivity Manager
-- Download Manager
-- Firebase Auth
-- Coil
