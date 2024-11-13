@@ -101,19 +101,19 @@ fun MainScreen () {
                 onSearchClick = {
                     navController.navigate("search") {
                         popUpTo("search") {
-                            inclusive = false
-                            saveState = true
+                            inclusive = true
                         }
                         restoreState = true
+                        launchSingleTop = true
                     }
                 },
                 onLikesClick = {
                     navController.navigate("likes") {
                         popUpTo("likes") {
-                            inclusive = false
-                            saveState = true
+                            inclusive = true
                         }
                         restoreState = true
+                        launchSingleTop = true
                     }
                 }
             )
