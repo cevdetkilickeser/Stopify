@@ -80,9 +80,9 @@ fun MainScreen () {
                     navController.navigate("profile") {
                         popUpTo("profile") {
                             inclusive = false
-                            saveState = true
                         }
                         restoreState = true
+                        launchSingleTop = true
                     }
                 }
             )
@@ -101,7 +101,7 @@ fun MainScreen () {
                 onSearchClick = {
                     navController.navigate("search") {
                         popUpTo("search") {
-                            inclusive = true
+                            inclusive = false
                         }
                         restoreState = true
                         launchSingleTop = true
@@ -110,7 +110,7 @@ fun MainScreen () {
                 onLikesClick = {
                     navController.navigate("likes") {
                         popUpTo("likes") {
-                            inclusive = true
+                            inclusive = false
                         }
                         restoreState = true
                         launchSingleTop = true
