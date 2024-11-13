@@ -78,10 +78,10 @@ fun MainScreen () {
                 },
                 onProfileClick = {
                     navController.navigate("profile") {
-                        popUpTo(navController.graph.startDestinationId) {
+                        popUpTo("profile") {
+                            inclusive = false
                             saveState = true
                         }
-                        launchSingleTop = true
                         restoreState = true
                     }
                 }
@@ -93,30 +93,30 @@ fun MainScreen () {
                 onHomeClick = {
                     navController.navigate("home") {
                         popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
+                            inclusive = false
                         }
                         launchSingleTop = true
-                        restoreState = true
                     }
                 },
                 onSearchClick = {
                     navController.navigate("search") {
-                        popUpTo(navController.graph.startDestinationId) {
+                        popUpTo("search") {
+                            inclusive = false
                             saveState = true
                         }
-                        launchSingleTop = true
                         restoreState = true
                     }
                 },
                 onLikesClick = {
                     navController.navigate("likes") {
-                        popUpTo(navController.graph.startDestinationId) {
+                        popUpTo("likes") {
+                            inclusive = false
                             saveState = true
                         }
-                        launchSingleTop = true
                         restoreState = true
                     }
-                })
+                }
+            )
         },
         content = { innerPadding ->
             MyNavHost(navController = navController, userId = userId, innerPadding = innerPadding)
