@@ -47,13 +47,14 @@ class VMDownloads @Inject constructor(
                         PlayerTrack(
                             it.trackId,
                             it.trackTitle,
-                            it.trackPreview,
+                            it.fileUri,
                             it.trackImage,
                             it.trackArtistName,
                             it.downloadId,
                             it.fileUri
                         )
                 }
+                println(_playerTrackListState.value)
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {
