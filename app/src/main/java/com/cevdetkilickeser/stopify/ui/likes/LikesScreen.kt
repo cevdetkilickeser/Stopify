@@ -65,7 +65,6 @@ fun LikesScreen(
                         navController.navigate("player/$startIndex/$playerTrackListJson")
                     },
                     onLikeClick = { track, isLike ->
-                        println(isLike)
                         if (isLike) {
                             viewModel.deleteLikeByTrackId(userId, track.trackId)
                         }

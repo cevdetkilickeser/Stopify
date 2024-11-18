@@ -54,7 +54,6 @@ class VMDownloads @Inject constructor(
                             it.fileUri
                         )
                 }
-                println(_playerTrackListState.value)
                 _loadingState.value = false
                 _errorState.value = null
             } catch (e: Exception) {
