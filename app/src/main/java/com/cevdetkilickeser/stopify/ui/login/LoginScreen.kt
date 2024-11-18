@@ -13,11 +13,10 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,8 +34,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cevdetkilickeser.stopify.R
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel()) {
     val email = remember { mutableStateOf("") }
@@ -74,7 +71,7 @@ fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel
             value = email.value,
             onValueChange = { email.value = it },
             label = { Text("Username") },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.Black,
                 focusedLabelColor = Color.Black,
                 cursorColor = Color.Black,
@@ -92,7 +89,7 @@ fun LoginScreen(navController: NavController, viewModel: VMLogin = hiltViewModel
             value = password.value,
             onValueChange = { password.value = it },
             label = { Text("Password") },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.Black,
                 focusedLabelColor = Color.Black,
                 cursorColor = Color.Black,
