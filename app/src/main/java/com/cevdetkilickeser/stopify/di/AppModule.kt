@@ -1,11 +1,6 @@
 package com.cevdetkilickeser.stopify.di
 
 import android.content.Context
-import com.cevdetkilickeser.stopify.repo.DownloadRepository
-import com.cevdetkilickeser.stopify.repo.HistoryRepository
-import com.cevdetkilickeser.stopify.repo.LikeRepository
-import com.cevdetkilickeser.stopify.repo.ServiceRepository
-import com.cevdetkilickeser.stopify.repo.UserPlaylistRepository
 import com.cevdetkilickeser.stopify.retrofit.ApiService
 import com.cevdetkilickeser.stopify.retrofit.ApiUtils
 import com.cevdetkilickeser.stopify.room.AppDatabase
@@ -24,36 +19,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
-
-    @Provides
-    @Singleton
-    fun provideServiceRepository(apiService: ApiService): ServiceRepository {
-        return ServiceRepository(apiService)
-    }
-
-    @Provides
-    @Singleton
-    fun provideHistoryRepository(historyDao: HistoryDao): HistoryRepository {
-        return HistoryRepository(historyDao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideLikeRepository(likeDao: LikeDao): LikeRepository {
-        return LikeRepository(likeDao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideDownloadRepository(@ApplicationContext context: Context, downloadDao: DownloadDao): DownloadRepository {
-        return DownloadRepository(context, downloadDao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideUserPlaylistRepository(userPlaylistDao: UserPlaylistDao): UserPlaylistRepository {
-        return UserPlaylistRepository(userPlaylistDao)
-    }
 
     @Provides
     @Singleton
@@ -89,10 +54,5 @@ class AppModule {
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
-    }
-
-    @Provides
-    fun provideContext(@ApplicationContext context: Context): Context {
-        return context
     }
 }

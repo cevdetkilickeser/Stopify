@@ -2,8 +2,9 @@ package com.cevdetkilickeser.stopify.repo
 
 import com.cevdetkilickeser.stopify.data.entity.History
 import com.cevdetkilickeser.stopify.room.HistoryDao
+import javax.inject.Inject
 
-class HistoryRepository(private val historyDao: HistoryDao) {
+class HistoryRepository @Inject constructor(private val historyDao: HistoryDao) {
 
     suspend fun insertHistory(history: History) = historyDao.insertHistory(history)
 

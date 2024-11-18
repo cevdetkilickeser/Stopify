@@ -3,8 +3,9 @@ package com.cevdetkilickeser.stopify.repo
 import com.cevdetkilickeser.stopify.data.entity.UserPlaylistTrack
 import com.cevdetkilickeser.stopify.data.model.playlist.UserPlaylistResponse
 import com.cevdetkilickeser.stopify.room.UserPlaylistDao
+import javax.inject.Inject
 
-class UserPlaylistRepository(private val userPlaylistDao: UserPlaylistDao) {
+class UserPlaylistRepository @Inject constructor(private val userPlaylistDao: UserPlaylistDao) {
 
     suspend fun getUserPlaylistResponses(userId: String): List<UserPlaylistResponse> = userPlaylistDao.getUserPlaylistResponses(userId)
 

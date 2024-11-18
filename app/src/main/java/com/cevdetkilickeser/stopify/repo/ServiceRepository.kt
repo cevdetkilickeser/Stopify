@@ -9,8 +9,9 @@ import com.cevdetkilickeser.stopify.data.model.search.AlbumData
 import com.cevdetkilickeser.stopify.data.model.search.ArtistData
 import com.cevdetkilickeser.stopify.data.model.single_genre.SingleGenreData
 import com.cevdetkilickeser.stopify.retrofit.ApiService
+import javax.inject.Inject
 
-class ServiceRepository(private val apiService: ApiService) {
+class ServiceRepository @Inject constructor(private val apiService: ApiService) {
 
     suspend fun getGenreDataList(): List<GenreData> =
         apiService.getGenreResponse().genreDataList
